@@ -1,0 +1,659 @@
+#+TITLE: Monoprice Mini Delta user guide
+#+AUTHOR: Breno Pacheco
+#+STARTUP: overview
+
+* Links
+
+  https://marlinfw.org/docs/gcode/M104.html
+  [[https://www.mpminidelta.com][wiki]]
+  [[https://www.thingiverse.com/search?q=mini+delta&dwh=445e357a3711ea6][thingiverse mods]]
+  [[https://www.reddit.com/r/mpminidelta/comments/8r0kh9/custom_marlin_firmware_for_mp_mini_delta/][reddit - marlin firmware]]
+  [[https://www.youtube.com/watch?v=jkuF_th7l_I][youtube - Modding the Monoprice Mini Delta]]
+
+* Software
+
+  - marlin firmware :: derived from =sprinter= and =grbl=. open
+    source. runs on microcontrollers (8-bit, 32-bit AVR) primarily
+    used on Arduino or Re-Arm, along with RAMPS board. The RAMPS is a
+    shield containing stepper drivers, sensor, fans and heater's
+    connectors, besides other peripherals). Support for 150 G-code
+    cmds, many kinematics, pid heater control, LCD UI,
+    multi-extruders, etc... [[https://marlinfw.org/docs/basics/introduction.html][What is Marlin?]]
+	
+  - octopi :: web server / interface controlling the printer.
+              a raspberry PI connected to the printer via usb can run it.
+			  
+  - slic3r :: slicing program. takes .stl or .igs and turn into G-code.
+	
+  - openscad :: parametric CAD program.
+
+** [[https://github.com/MarlinFirmware/MarlinDocumentation/blob/master/_basics/introduction.md][Marlin introduction]]                                           :website:
+
+Marlin is an open source [[https://en.wikipedia.org/wiki/Firmware][firmware]] for the [[https://en.wikipedia.org/wiki/RepRap_project][RepRap]] family of replicating
+rapid prototypers --- popularly known as "3D printers." It was derived
+from [[http://reprap.org/wiki/List_of_Firmware#Sprinter][Sprinter]] and [[http://reprap.org/wiki/Grbl#Grbl][grbl]], and became a standalone [[https://en.wikipedia.org/wiki/Open-source_software][open source]] project on
+August 12, 2011 with its [[https://github.com/MarlinFirmware/Marlin/commit/f850af5c1ca343ed65b94c4b9da5dd1ab4c4a53c][Github release]]. Marlin is licensed under the
+GPLv3 and is free for all applications.
+
+From the start Marlin was built by and for [[http://reprap.org/wiki/][RepRap]] enthusiasts to be a
+straightforward, reliable, and adaptable printer driver that "just
+works." As a testament to its quality, Marlin is used by several
+respected commercial 3D printers. Ultimaker, Printrbot, AlephObjects
+(Lulzbot), and Prusa Research are just a few of the vendors who ship a
+variant of Marlin. Marlin is also capable of driving CNC's and laser
+engravers.
+
+One key to Marlin's popularity is that it runs on inexpensive 8-bit
+[[http://www.atmel.com/products/microcontrollers/avr/][Atmel AVR]] [[http://en.wikipedia.org/wiki/Microcontroller][micro-controllers]] - Marlin 2.x has added support for 32-bit
+boards. These chips are at the center of the popular [[https://en.wikipedia.org/wiki/Open-source_hardware][open source]]
+[[http://arduino.cc][Arduino/Genuino]] platform. The reference platforms for Marlin is an
+Arduino Mega2560 with RAMPS 1.4 and Re-Arm with Ramps 1.4.
+
+As a community product, Marlin aims to be adaptable to as many boards
+and configurations as possible. We want it to be configurable,
+customizable, extensible, and economical for hobbyists and vendors
+alike. A Marlin build can be very small, for use on a headless printer
+with only modest hardware. Features are enabled as-needed to adapt
+Marlin to added components.
+
+*** Main features
+
+
+ - Full-featured =G-code= with over 150 commands
+ - Complete G-code movement suite, including lines, arcs, and Bézier curves
+ - Smart motion system with lookahead, interrupt-based movement, linear acceleration
+ - Support for Cartesian, Delta, SCARA, and Core/H-Bot kinematics
+ - Closed-loop PID heater control with auto-tuning, thermal protection, safety cutoff
+ - Support for up to 5 extruders plus a heated printbed
+ - LCD Controller UI with [[/MarlinFirmware/MarlinDocumentation/blob/master/docs/development/lcd_language.html][more than 30 language translations]]
+ - Host-based and SD Card printing with autostart
+ - Bed Leveling Compensation --- with or without a bed probe
+ - [[/MarlinFirmware/MarlinDocumentation/blob/master/docs/features/lin_advance.html][Linear Advance]] for pressure-based extrusion
+ - Support for Volumetric extrusion
+ - Support for mixing and multi-extruders (Cyclops, Chimera, Diamond)
+ - Support for Filament Runout/Width Sensors
+ - Print Job Timer and Print Counter
+
+*** How Marlin Works
+
+
+ Marlin Firmware runs on the 3D printer's main board, managing all the
+ real-time activities of the machine. It coordinates the heaters,
+ steppers, sensors, lights, LCD display, buttons, and everything else
+ involved in the 3D printing process.
+
+ Marlin implements an additive manufacturing process called [[https://en.wikipedia.org/wiki/Fused_deposition_modeling][Fused
+ Deposition Modeling (FDM)]] --- aka [[https://en.wikipedia.org/wiki/Fused_filament_fabrication][Fused Filament Fabrication (FFF)]].
+ In this process a motor pushes plastic filament through a hot nozzle
+ that melts and extrudes the material while the nozzle is moved under
+ computer control. After several minutes (or many hours) of laying
+ down thin layers of plastic, the result is a physical object.
+
+ The control-language for Marlin is a derivative of [[https://en.wikipedia.org/wiki/G-code][G-code]]. G-code
+ commands tell a machine to do simple things like "set heater 1 to
+ 180°," or "move to XY at speed F." To print a model with Marlin, it
+ must be converted to G-code using a program called a "slicer." Since
+ every printer is different, you won't find G-code files for download;
+ you'll need to slice them yourself.
+
+ As Marlin receives movement commands it adds them to a movement queue
+ to be executed in the order received. The "stepper interrupt"
+ processes the queue, converting linear movements into precisely-timed
+ electronic pulses to the stepper motors. Even at modest speeds Marlin
+ needs to generate thousands of stepper pulses every second. (e.g., 80
+ steps-per-mm * 50mm/s = 4000 steps-per-second!) Since CPU speed
+ limits how fast the machine can move, we're always looking for new
+ ways to optimize the stepper interrupt!
+
+ Heaters and sensors are managed in a second interrupt that executes
+ at much slower speed, while the main loop handles command processing,
+ updating the display, and controller events. For safety reasons,
+ Marlin will actually reboot if the CPU gets too overloaded to read
+ the sensors.
+
+*** Printing Things
+
+
+**** Modeling
+
+
+ While Marlin only prints G-code, most slicers only slice STL files.
+
+ Whatever you use for your [[https://en.wikipedia.org/wiki/Computer-aided_design][CAD]] toolchain, as long you can export a
+ solid model, a slicer can "slice" it into G-code, and Marlin firmware
+ will do its best to print the final result.
+
+ Before Marlin can dream of printing, first you'll need a [[http://www.thingiverse.com/thing:7900][3D model]].
+ You can either [[http://www.thingiverse.com/thing:7900/zip][download]] models or make your own with one of many free
+ CAD programs, such as [[http://www.freecadweb.org/][FreeCAD]], [[http://www.openscad.org/][OpenSCAD]], [[https://www.tinkercad.com/][Tinkercad]], [[https://www.autodesk.com/products/fusion-360/overview][Autodesk Fusion
+ 360]], [[http://www.sketchup.com/][SketchUp]], etc.
+
+ A high degree of knowledge is needed to model complex objects like a
+ [[http://www.thingiverse.com/thing:308335][T-Rex Skull]], but other objects can be quite [[http://www.thingiverse.com/thing:172175][simple to model]]. To get
+ ideas and test things out, explore sites like [[http://www.thingiverse.com/explore/popular][Thingiverse]] and
+ [[http://www.youmagine.com/][YouMagine]] and print things for fun.
+
+**** Slicing
+
+
+ Slicers prepare a solid 3D model by dividing it up into thin slices
+ (layers). In the process it generates the [[https://en.wikipedia.org/wiki/G-code][G-code]] that tells the
+ printer in minute detail how to reproduce the model. There are many
+ slicers to choose from, including:
+
+ - [[https://ultimaker.com/en/products/cura-software][Cura]].
+ - [[https://slic3r.org/][Slic3r]].
+ - [[https://www.prusa3d.com/prusaslicer/][PrusaSlicer]] ( /formerly Slic3r Prusa Edition/) The new Kid on the block based on Slic3r.
+ - [[https://www.simplify3d.com/][Simplify3D]] is a commercial offering.
+
+**** Printing
+
+
+ Marlin can be controlled entirely from a host or in standalone mode
+ from an SD Card. Even without an LCD controller, a standalone SD
+ print can still be initiated from a host, so your computer can be
+ untethered from the printer.
+
+ Host software is available for several platforms, including desktop
+ systems, Raspberry Pi, and Android tablets. Any device with a USB
+ port and serial terminal can technically act as a host, but you'll
+ have a better printing experience using host software specifically
+ designed for 3D printers. Current selections include:
+
+ - [[https	://www.pronterface.com/][Pronterface]] :: is an open source host by Kliment.
+ - [[https	://www.repetier.com/][Repetier Host]] :: is a closed-source host by Repetier Software.
+ - [[https	://octoprint.org/][OctoPrint]] :: is an open source host for Raspberry Pi by [[https://www.patreon.com/foosel][Gina Häußge]].
+ - [[https	://ultimaker.com/en/products/cura-software][Cura]] :: is an open source host by Ultimaker. 
+ - [[https	://www.simplify3d.com/][Simplify3D]] :: includes both a host and slicer.
+
+ Many 3D printers ship with a customized version of Repetier or Cura.
+ While this helps to associate the printer brand with a companion
+ piece of software, these versions are usually obsolete and receive
+ few upgrades. We recommend you download the latest generic version of
+ your preferred host software instead.
+
+* Codes for start/end (Marlin)
+
+** DEFAULT
+
+;; START G-CODE (DEFAULT)
+G90          ; switch to absolute positioning
+G92 E0       ; reset extrusion distance
+G1 E20 F200  ; purge 20mm of filament to prime nozzle.
+G92 E0       ; reset extrusion distance
+G4 S5        ; Pause for 5 seconds to allow time for removing extruded filament
+G28          ; start from home position
+G1 E-6 F900  ; retract 6mm of filament before starting the bed leveling process
+G92 E0       ; reset extrusion distance
+G4 S5        ; pause for 5 seconds to allow time for removing extruded filament
+G29 P0       ; Adjust Z heigth only
+G1 Z30       ; raise Z 30mm to prepare for priming the nozzle
+G1 E5 F200   ; extrude 5mm of filament to help prime the nozzle just prior to the start of the print
+G92 E0       ; reset extrusion distance
+G4 S5        ; pause for 5 seconds to allow time for cleaning the nozzle and build plate if needed
+
+;; END G-CODE
+M107            ; turn off fan
+M104 S0         ; turn off hotend heater
+M140 S0         ; turn off bed heater
+G91             ; Switch to use Relative Coordinates
+G1 E-2 F300     ; retract the filament a bit before lifting the nozzle to release some of the pressure
+G1 Z5 E-5 F4800 ; move nozzle up a bit and retract filament even more
+G28             ; return to home positions so the nozzle is out of the way
+M84             ; turn off stepper motors
+G90             ; switch to absolute positioning
+M82             ; absolute extrusion mode
+
+
+** CUSTOM
+
+;; START G-CODE (custom)
+G90          ; switch to absolute positioning
+G28          ; start from home position
+G29 P0       ; Adjust Z heigth 
+G28          ; back to home position
+G92 E0       ; reset extrusion distance
+G1 E20 F200  ; purge 20mm of filament to prime nozzle.
+G92 E0       ; reset extrusion distance
+G4 S5        ; Pause for 5 seconds to allow time for removing extruded filament
+
+;; END G-CODE (custom)
+M107            ; turn off fan
+M104 S0         ; turn off hotend heater
+M140 S0         ; turn off bed heater
+G28             ; return to home position
+M84             ; turn off stepper motors
+G90             ; switch to absolute positioning
+M82             ; absolute extrusion mode
+
+* Calibration
+
+;; CALIBRATION (Marlin MPMD)
+; should not be run on every print.
+; does bed leveling and z height leveling and save to EEPROM
+M502        ; Reset leveling to Marlin defaults
+M140 S50    ; Set bed temperature
+M665 S120   ; Set travel speed
+M851 Z-0.28 ; distance the probe (tact button) sinks when G29 probing
+G29         ; get calibration for bed tilt (7x7 grid) and Z height 
+M500        ; save calibration to EEPROM
+
+* Libraries
+
+  - [[https://github.com/nophead/NopSCADlib][nophead/NopSCADlib]] :: parts and components of electronics and 3d printers.
+  - [[https://github.com/joewalnes/toybrick][joewalnes/toybrick]] :: legos
+  - [[https://github.com/TeXitoi/keyberon][TeXitoi/keyberon]] :: keyboard
+  - [[https://github.com/OskarLinde/scad-utils][OskarLinde/scad-utils]] :: rounding, shelling, etc utils 
+  - [[https://github.com/boltsparts/BOLTS][boltsparts/BOLTS]] :: bolts and nuts
+  - [[https://www.thingiverse.com/tag:openscad][thingiverse models]] :: collection of models 12000 models
+
+* fdm_material conf
+
+<?xml version='1.0' encoding='utf-8'?>
+<fdmmaterial xmlns="http://www.ultimaker.com/material" xmlns:cura="http://www.ultimaker.com/cura" version="1.3">
+  <metadata>
+    <name>
+      <brand>Generic</brand>
+      <material>PLA</material>
+      <color>Generic</color>
+      <label>my PLA</label>
+    </name>
+    <version>7</version>
+    <GUID>0ff92885-617b-4144-a03c-9989872454bc</GUID>
+    <color_code>#ffc924</color_code>
+    <description>Fast, safe and reliable printing. PLA is ideal for the fast and reliable printing of parts and prototypes with a great surface quality.</description>
+    <adhesion_info>Print on bare glass. Use tape for cold build plates.</adhesion_info>
+  </metadata>
+  <properties>
+    <density>1.24</density>
+    <diameter>1.75</diameter>
+  </properties>
+  <settings>
+    <setting key="print temperature">200</setting>
+    <setting key="heated bed temperature">50.0</setting>
+    <setting key="standby temperature">200</setting>
+    <setting key="adhesion tendency">0</setting>
+    <setting key="surface energy">100</setting>
+    <setting key="build volume temperature">28</setting>
+    <machine>
+      <machine_identifier manufacturer="Kati Hal ARGE" product="kupido" />
+      <setting key="heated bed temperature">50</setting>
+      <setting key="standby temperature">200</setting>
+      <setting key="print cooling">100</setting>
+      <setting key="retraction speed">40</setting>
+      <setting key="retraction amount">0.8</setting>
+    </machine>
+    <machine>
+      <machine_identifier manufacturer="IMADE3D" product="IMADE3D JellyBOX" />
+      <setting key="print temperature">200</setting>
+      <setting key="heated bed temperature">55</setting>
+      <hotend id="0.4 mm">
+        <setting key="hardware compatible">yes</setting>
+      </hotend>
+    </machine>
+    <machine>
+      <machine_identifier manufacturer="MaukCC" product="hms434" />
+      <setting key="print temperature">200</setting>
+      <setting key="heated bed temperature">43</setting>
+      <setting key="standby temperature">150</setting>
+      <setting key="print cooling">40.0</setting>
+      <setting key="retraction speed">40</setting>
+      <hotend id="0.8mm TP extruder">
+        <setting key="hardware compatible">yes</setting>
+        <setting key="retraction amount">1.5</setting>
+      </hotend>
+      <hotend id="0.4mm TP extruder">
+        <setting key="hardware compatible">yes</setting>
+        <setting key="retraction amount">1.0</setting>
+      </hotend>
+      <hotend id="0.25mm TP extruder">
+        <setting key="hardware compatible">yes</setting>
+        <setting key="retraction amount">1.0</setting>
+      </hotend>
+    </machine>
+    <machine>
+      <machine_identifier manufacturer="Creality3D" product="creality_ender5" />
+      <setting key="standby temperature">200</setting>
+      <setting key="print cooling">100</setting>
+      <setting key="retraction speed">45</setting>
+      <setting key="retraction amount">5</setting>
+    </machine>
+    <machine>
+      <machine_identifier manufacturer="Creality3D" product="creality_ender4" />
+      <setting key="standby temperature">200</setting>
+      <setting key="print cooling">100</setting>
+      <setting key="retraction speed">45</setting>
+      <setting key="retraction amount">5</setting>
+    </machine>
+    <machine>
+      <machine_identifier manufacturer="Creality3D" product="creality_ender3" />
+      <setting key="standby temperature">200</setting>
+      <setting key="print cooling">100</setting>
+      <setting key="retraction speed">45</setting>
+      <setting key="retraction amount">5</setting>
+    </machine>
+    <machine>
+      <machine_identifier manufacturer="Creality3D" product="creality_ender2" />
+      <setting key="standby temperature">200</setting>
+      <setting key="print cooling">100</setting>
+      <setting key="retraction speed">45</setting>
+      <setting key="retraction amount">5</setting>
+    </machine>
+    <machine>
+      <machine_identifier manufacturer="Creality3D" product="creality_cr20pro" />
+      <setting key="standby temperature">200</setting>
+      <setting key="print cooling">100</setting>
+      <setting key="retraction speed">45</setting>
+      <setting key="retraction amount">5</setting>
+    </machine>
+    <machine>
+      <machine_identifier manufacturer="Creality3D" product="creality_cr20" />
+      <setting key="standby temperature">200</setting>
+      <setting key="print cooling">100</setting>
+      <setting key="retraction speed">45</setting>
+      <setting key="retraction amount">5</setting>
+    </machine>
+    <machine>
+      <machine_identifier manufacturer="Creality3D" product="creality_cr10spro" />
+      <setting key="standby temperature">200</setting>
+      <setting key="print cooling">100</setting>
+      <setting key="retraction speed">45</setting>
+      <setting key="retraction amount">5</setting>
+    </machine>
+    <machine>
+      <machine_identifier manufacturer="Creality3D" product="creality_cr10s5" />
+      <setting key="standby temperature">200</setting>
+      <setting key="print cooling">100</setting>
+      <setting key="retraction speed">45</setting>
+      <setting key="retraction amount">5</setting>
+    </machine>
+    <machine>
+      <machine_identifier manufacturer="Creality3D" product="creality_cr10s4" />
+      <setting key="standby temperature">200</setting>
+      <setting key="print cooling">100</setting>
+      <setting key="retraction speed">45</setting>
+      <setting key="retraction amount">5</setting>
+    </machine>
+    <machine>
+      <machine_identifier manufacturer="Creality3D" product="creality_cr10s" />
+      <setting key="standby temperature">200</setting>
+      <setting key="print cooling">100</setting>
+      <setting key="retraction speed">45</setting>
+      <setting key="retraction amount">5</setting>
+    </machine>
+    <machine>
+      <machine_identifier manufacturer="Creality3D" product="creality_cr10mini" />
+      <setting key="standby temperature">200</setting>
+      <setting key="print cooling">100</setting>
+      <setting key="retraction speed">45</setting>
+      <setting key="retraction amount">5</setting>
+    </machine>
+    <machine>
+      <machine_identifier manufacturer="Creality3D" product="creality_cr10" />
+      <setting key="standby temperature">200</setting>
+      <setting key="print cooling">100</setting>
+      <setting key="retraction speed">45</setting>
+      <setting key="retraction amount">5</setting>
+    </machine>
+    <machine>
+      <machine_identifier manufacturer="CreawsomeMod" product="creality_base" />
+      <setting key="standby temperature">200</setting>
+      <setting key="print cooling">100</setting>
+      <setting key="retraction speed">45</setting>
+      <setting key="retraction amount">5</setting>
+    </machine>
+    <machine>
+      <machine_identifier manufacturer="Cartesio bv" product="cartesio" />
+      <setting key="print temperature">200</setting>
+      <setting key="heated bed temperature">43</setting>
+      <setting key="standby temperature">150</setting>
+      <setting key="print cooling">40.0</setting>
+      <setting key="retraction speed">40</setting>
+      <hotend id="0.8mm thermoplastic extruder">
+        <setting key="hardware compatible">yes</setting>
+        <setting key="retraction amount">1.5</setting>
+      </hotend>
+      <hotend id="0.4mm thermoplastic extruder">
+        <setting key="hardware compatible">yes</setting>
+        <setting key="retraction amount">1.0</setting>
+      </hotend>
+      <hotend id="0.25mm thermoplastic extruder">
+        <setting key="hardware compatible">yes</setting>
+        <setting key="retraction amount">1.0</setting>
+      </hotend>
+    </machine>
+    <machine>
+      <machine_identifier manufacturer="Kati Hal ARGE" product="alyanx3dp" />
+      <setting key="heated bed temperature">50</setting>
+      <setting key="standby temperature">200</setting>
+      <setting key="print cooling">100</setting>
+      <setting key="retraction speed">40</setting>
+      <setting key="retraction amount">1.5</setting>
+    </machine>
+    <machine>
+      <machine_identifier manufacturer="Kati Hal ARGE" product="alya3dp" />
+      <setting key="heated bed temperature">50</setting>
+      <setting key="standby temperature">200</setting>
+      <setting key="print cooling">100</setting>
+      <setting key="retraction speed">40</setting>
+      <setting key="retraction amount">1.5</setting>
+    </machine>
+  </settings>
+</fdmmaterial>
+
+* configuration files for cura
+
+    the following is a base64 encoded zip file containing configuration
+    files for the mp-delta-mini in Cura software. to extract it, run:
+
+    #+begin_src sh
+        base64 -d file.txt > file.zip
+        unzip file.zip
+    #+end_src
+
+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
+YlkxN4zbszDiXfuAUB7Fa++2UvA5KPAy+i9QSwMEFAAAAAgADUxmUZ6A9tgdAQAADwIAACoAHABt
+b25vcHJpY2VfbWluaV9kZWx0YV9tcG1kX2RlZmF1bHQuaW5zdC5jZmdVVAkAAykYpV8pGKVfdXgL
+AAEE6AMAAAToAwAAhZC9bsMwDIR3AXqHPEHhFAk6dQu6BejQLSgE2qIdApSsUpSBvH1lx/np1E3k
+HU4f7zRgRAH+tmZCyTTGzftmZ02EgPV1/DweNgfsobBa47GnSHo19T4koago1lhzCqjgQaEGZVSl
+OLhH4N6anwJMenF6SXNwHCUAW7OON7U7QxwwL4kTcMFc82puUprQMVxQ3BlpOKubQAhWluZlu/vX
+57JiWszN22w+40x3AxLo64WtkB/QrRdkhxFaRl/1LyloTQdS80NtgxKjm0YuAfNd9temXIBaCwG7
+Fr1TDKlWrEXmf/aNNc98d/o/0M2yft1aI6gC3cLfjaGtVFWi2BPX9nJJaRRdMe8Yt7UK4kP7AM7P
+4vXuthD7xBV4Lv0XUEsDBBQAAAAIAA1MZlHzwOjcJgEAABcCAAAyABwAbW9ub3ByaWNlX21pbmlf
+ZGVsdGFfbXBtZF9mYXN0X2FuZF9zdHJvbmcuaW5zdC5jZmdVVAkAAykYpV8pGKVfdXgLAAEE6AMA
+AAToAwAAhZDNasQwDITvBr9DnqBkyy7tpbeyt4VCe1uKUWIlEdiOK8uBvH2dbPanp95szTD6NOce
+AzK4b60m5ERjqN6qvVYBPJbX6eP0Xh0hSQXBVp/CY+i1sthRILmYO+sjUxBkrbQ6exSwIFACE4pQ
+6M09+KDVTwZHMhuZ47IgjOzBabV9r2o7QOgxrYkTuIyp5JXcKDShcTAjmwGpH8RMwAQbS/202//r
+M0kwrub6ZTEPuNBdgRg60aphsj2a7YJkMEDj0Bb9izNq1QKXfJ+dUHRoptFlj+kml4KgaMZDqYXA
+mQatEfSxVC2Zlz2HWqtHvhXo+fXv0NSX8U4rRmFoV/529E2hKhKFjlxpL+UYR5YN84ZxHQsj3rUj
+uPQoXu5uMjkbXQFeSv8FUEsDBBQAAAAIAA1MZlHcaJIxGwEAAAwCAAAnABwAbW9ub3ByaWNlX21p
+bmlfZGVsdGFfbXBtZF9mYXN0Lmluc3QuY2ZnVVQJAAMpGKVfKRilX3V4CwABBOgDAAAE6AMAAIWQ
+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
+XaXgc1DhtfQfUEsDBBQAAAAIAA1MZlHizFC6IgEAABICAAAtABwAbW9ub3ByaWNlX21pbmlfZGVs
+dGFfbXBtZF9zdXBlcl9mYXN0Lmluc3QuY2ZnVVQJAAMpGKVfKRilX3V4CwABBOgDAAAE6AMAAIWQ
+zWrDMBCE7wK9Q56gOCWhvfRWcgsU2lsoYm2v7QVJVlcrQ96+a8f56ak37c4w+nZOPUZk8N/WTMiZ
+xrh52+ysiRBQX8eP4/vmsyTkzQGyWNNiR5Hk4uvakJiiIFtjzSmgQAsCmpVRhGLv7pl7a34KeJKz
+k3Oas+PIAbw163hVmwFij3lJnMAXzJqnuUloQufhjOwGpH4QNwETrCzV03b3r89lwbSYq5fZPOBM
+dwVi6PTCmqnt0a0XZIcRao+t6l9c0JoGWPND8ULJo5tGXwLmm6wFgWougNZC4F2NrRMMWiFI4fmf
+fWXNI98C9Pz6d+mqy3prDaMwNAt/M4ZaqVSi2JHX9nJJaWRZMW8Y17Uw4l07gM+P4uXuupBvk1fg
+ufRfUEsBAh4DFAAAAAgADUxmUfqqolJEAgAA+AQAAB4AGAAAAAAAAQAAAKSBAAAAAGZkbWV4dHJ1
+ZGVyX21wbWRfYmVzdC5pbnN0LmNmZ1VUBQADKRilX3V4CwABBOgDAAAE6AMAAFBLAQIeAxQAAAAI
+AA1MZlHivrGzPAIAAOkEAAAhABgAAAAAAAEAAACkgZwCAABmZG1leHRydWRlcl9tcG1kX2RlZmF1
+bHQuaW5zdC5jZmdVVAUAAykYpV91eAsAAQToAwAABOgDAABQSwECHgMUAAAACAANTGZRw7WUdDwC
+AAAIBQAAJAAYAAAAAAABAAAApIEzBQAAZmRtZXh0cnVkZXJfbXBtZF9taW5pc19iZXN0Lmluc3Qu
+Y2ZnVVQFAAMpGKVfdXgLAAEE6AMAAAToAwAAUEsBAh4DFAAAAAgADUxmUbWLcuX/AQAAKAQAAB8A
+GAAAAAAAAQAAAKSBzQcAAGZkbWV4dHJ1ZGVyX21wbWRfbWluaXMuaW5zdC5jZmdVVAUAAykYpV91
+eAsAAQToAwAABOgDAABQSwECHgMUAAAACAANTGZRsFBHETQCAACQBAAAJgAYAAAAAAABAAAApIEl
+CgAAZmRtZXh0cnVkZXJfbXBtZF9taW5pc19sYXJnZXIuaW5zdC5jZmdVVAUAAykYpV91eAsAAQTo
+AwAABOgDAABQSwECHgMUAAAACAANTGZRnyAnc0ICAAD1BAAAPgAYAAAAAAABAAAApIG5DAAAbW9u
+b3ByaWNlX21pbmlfZGVsdGFfZmRtZXh0cnVkZXJfbXBtZF9mYXN0X2FuZF9zdHJvbmcuaW5zdC5j
+ZmdVVAUAAykYpV91eAsAAQToAwAABOgDAABQSwECHgMUAAAACAANTGZREmmSOUECAADvBAAAMwAY
+AAAAAAABAAAApIFzDwAAbW9ub3ByaWNlX21pbmlfZGVsdGFfZmRtZXh0cnVkZXJfbXBtZF9mYXN0
+Lmluc3QuY2ZnVVQFAAMpGKVfdXgLAAEE6AMAAAToAwAAUEsBAh4DFAAAAAgADUxmUVqXDy5DAgAA
+BwUAADoAGAAAAAAAAQAAAKSBIRIAAG1vbm9wcmljZV9taW5pX2RlbHRhX2ZkbWV4dHJ1ZGVyX21w
+bWRfbGl0aG9waGFuZXMuaW5zdC5jZmdVVAUAAykYpV91eAsAAQToAwAABOgDAABQSwECHgMUAAAA
+CAANTGZRKROMSkUCAAD0BAAAOQAYAAAAAAABAAAApIHYFAAAbW9ub3ByaWNlX21pbmlfZGVsdGFf
+ZmRtZXh0cnVkZXJfbXBtZF9zdXBlcl9mYXN0Lmluc3QuY2ZnVVQFAAMpGKVfdXgLAAEE6AMAAATo
+AwAAUEsBAh4DFAAAAAgADUxmUbJiqlIZAQAADAIAACcAGAAAAAAAAQAAAKSBkBcAAG1vbm9wcmlj
+ZV9taW5pX2RlbHRhX21wbWRfYmVzdC5pbnN0LmNmZ1VUBQADKRilX3V4CwABBOgDAAAE6AMAAFBL
+AQIeAxQAAAAIAA1MZlGegPbYHQEAAA8CAAAqABgAAAAAAAEAAACkgQoZAABtb25vcHJpY2VfbWlu
+aV9kZWx0YV9tcG1kX2RlZmF1bHQuaW5zdC5jZmdVVAUAAykYpV91eAsAAQToAwAABOgDAABQSwEC
+HgMUAAAACAANTGZR88Do3CYBAAAXAgAAMgAYAAAAAAABAAAApIGLGgAAbW9ub3ByaWNlX21pbmlf
+ZGVsdGFfbXBtZF9mYXN0X2FuZF9zdHJvbmcuaW5zdC5jZmdVVAUAAykYpV91eAsAAQToAwAABOgD
+AABQSwECHgMUAAAACAANTGZR3GiSMRsBAAAMAgAAJwAYAAAAAAABAAAApIEdHAAAbW9ub3ByaWNl
+X21pbmlfZGVsdGFfbXBtZF9mYXN0Lmluc3QuY2ZnVVQFAAMpGKVfdXgLAAEE6AMAAAToAwAAUEsB
+Ah4DFAAAAAgADUxmUaeonOgdAQAAFAIAAC4AGAAAAAAAAQAAAKSBmR0AAG1vbm9wcmljZV9taW5p
+X2RlbHRhX21wbWRfbGl0aG9waGFuZXMuaW5zdC5jZmdVVAUAAykYpV91eAsAAQToAwAABOgDAABQ
+SwECHgMUAAAACAANTGZR4QTyziEBAAARAgAALQAYAAAAAAABAAAApIEeHwAAbW9ub3ByaWNlX21p
+bmlfZGVsdGFfbXBtZF9taW5pc19iZXN0Lmluc3QuY2ZnVVQFAAMpGKVfdXgLAAEE6AMAAAToAwAA
+UEsBAh4DFAAAAAgADUxmUfusu8gaAQAADQIAACgAGAAAAAAAAQAAAKSBpiAAAG1vbm9wcmljZV9t
+aW5pX2RlbHRhX21wbWRfbWluaXMuaW5zdC5jZmdVVAUAAykYpV91eAsAAQToAwAABOgDAABQSwEC
+HgMUAAAACAANTGZRVC1S0x4BAAAUAgAALwAYAAAAAAABAAAApIEiIgAAbW9ub3ByaWNlX21pbmlf
+ZGVsdGFfbXBtZF9taW5pc19sYXJnZXIuaW5zdC5jZmdVVAUAAykYpV91eAsAAQToAwAABOgDAABQ
+SwECHgMUAAAACAANTGZR4sxQuiIBAAASAgAALQAYAAAAAAABAAAApIGpIwAAbW9ub3ByaWNlX21p
+bmlfZGVsdGFfbXBtZF9zdXBlcl9mYXN0Lmluc3QuY2ZnVVQFAAMpGKVfdXgLAAEE6AMAAAToAwAA
+UEsFBgAAAAASABIAAQgAADIlAAAAAA==
+
+* placeholder

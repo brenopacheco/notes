@@ -1,0 +1,29 @@
+### Babel doesn't do anything out-of-the-box 
+-> plugins and presets do the work
+
+```input.js
+    const a = () => 1;
+```
+npx babel input.js --out-file output.js
+  -> doesn't parse jack
+
+@babel/plugin-transform-arrow-functions
+
+{
+  plugins: ['@babel/plugin-transform-arrow-functions']
+}
+
+npx babel input.js --out-file output.js
+  -> const a = function() { return 1 }
+
+### the plugin added the functionality
+
+# Presets:
+  -> bundles of plugins
+
+@babel/preset-env     -> all ES6 features
+  -> supports all browsers so a lot of bloated code
+  -> write .browserlistrc file with >0.25% to support only
+     browsers with > 0.25% market share
+
+@babel/preset-react   -> jsx support

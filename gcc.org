@@ -1,0 +1,43 @@
+#+title: gcc
+
+* GCC FLAGS
+
+    -Wall                   general warnings
+    -Wextra                 additional warnings
+    -Werror                 treats warnings as errors
+    -Wshadow                variable shadowing
+    -Wundef                 undefined macros
+    -Wconversion            conversions
+    -Wpedantic              warnings about some g++/gcc tricks
+    -Wpedantic-errors       turns g++/gcc tricks into errors
+    -std=XXX                set C standard
+    -I dir                  tells dirs to look for includes
+    -L dir                  tells where to look for shared libraries
+    -g                      includes debug info in ELF
+    -g3                     includes more stuff (macros)
+    -lXXX                   compile with shared library XXX
+    -o                      output file
+    -D macro                tells what macro to use
+     -E                     produce preprocessed output (.i)
+     -S                     produce assembly code (.s)
+     -save-temps            keep intermediate files
+      -v                    outputs compiler flags
+     -Os                    optimize for size
+     -O2                    optimize for speed
+     Wformat=2              warns strings not verified
+     Wformat-truncation     warns possible overflows
+     Wunused-parameter      unused argument in funs
+     Wfloat-equal           comparing floats
+     -fPIC                  ???
+
+* .i files
+
+ The .i files are also called as "Pure C files". In preprocessing stage
+     -> Header files will be included.
+     -> Macros will be replaced.
+     -> Comments are removed.
+     -> Used for conditional compilation. If you look at the .i file you can see these things.
+ 	-> gcc -E foo.c -o foo.i
+
+   source -> preprocessed -> machine code -> object -> executable
+ 	.c,.h -> .i -> .s -> .o -> ELF
