@@ -1,0 +1,30 @@
+console.log(`Empty module: ${JSON.stringify(this)}`) // 1
+
+const obj  = {
+    name: "obj",
+    fun: () => this,
+    fun2: function () { return this },
+    fun3: function () {
+        return (() => this)();
+    }
+};
+
+console.log(`Empty module: ${JSON.stringify(obj.fun())}`); // 2
+console.log(`obj: ${JSON.stringify(obj.fun2())}`); // 2
+console.log(`obj: ${JSON.stringify(obj.fun3())}`); // 2
+console.log(`obj: ${JSON.stringify(obj.fun2.bind(obj)())}`); // 2
+
+
+// this in arrow function binds to whatever "this" is 
+// in the lexical context in which it is defined.
+// i.e: obj = { fun: () => this } if obj is defined
+// in the global's lexical context, this should be set
+// to the global object
+//
+// While in browsers the global scope is the window object,
+// in nodeJS the global scope of a module is the module
+// itself, so when you define a variable in the global scope
+// of your nodeJS module, it will be local to this module.
+//
+// case 1: this is global object
+// case 2

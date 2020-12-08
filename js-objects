@@ -1,0 +1,23 @@
+Ways to create an object.
+
+{ name: 'a' }
+new Object()
+Object.create({ name: 'a' })
+function a(){ return { name: 'a' } }; a()
+function a() { this.name = 'a' }; new a()
+class a { constructor() { this.name = 'a' } }; new a()
+
+function a() { /* statement */  }
+function()   { /* expression */ } 
+
+* functions pass by reference
+
+
+
+=======================
+1. every object inherits from the Object object
+2. functions are objects
+3. functions are Function objects
+4. Function objects inherit from Object object
+
+

@@ -1,0 +1,125 @@
+#+title: gdb reference
+
+* compiling
+    gcc ... -g
+    gcc ... -g3
+
+* running
+    gdb <program> 
+    gdb --args <program> <args...>
+    set args <args...>     // set args
+    run                    // run from the start
+    kill                   // stop running program
+    quit                    // quit
+
+* info
+    whatis <variable_name>   // print type of var
+    info variables    // print all global/static vars
+    info locals       // print stack frame vars
+    info args         // print stack frame args
+    info break        // list breakpoints
+    info watch        // list watchpoints
+
+    info ...
+        threads, files, functions, registers,
+        symbols, types, sources, address,
+        sharedlibraries, signals, directories,
+        listsize
+
+* breakpoints
+    break <function_name|line_number>
+    delete <breakpoint#>
+    enable <breakpoint#>
+    disable <breakpoint#>
+    clear
+
+* watch points
+    watch <variable>
+    delete <watchpoint#>
+    enable <watchpoint#>
+    disable <watchpoint#>
+
+* stack
+    backtrace      // show call stack
+    where          // show call stack
+    where full     // show stack and variables
+    frame <frame#> // select stack frame
+    up               // go up one level in the stack
+    down          // go down one level in stack
+
+* conditons
+    break <where> if <condition>
+    watch <where>  if <condition>
+    condition <breakpoint#> <condition>
+    condition <watchpoint#> <condition>
+    
+* steping
+    step      // next instruction. step into function
+    next     // next instruction. don't step into
+    finish   // continue until function returns
+    continue // continue normal execution
+
+* variables
+    print <where>      // print once
+    display <where>    // print at each step
+    undisplay <where>  
+    enable display <display#>
+    disable display <display#>
+    x <address>       // print memory
+    nfu <address>     // print memory
+    n: units, f: format, u: how many bytes: b/h/w/g
+
+* format
+    a    pointer
+    c    read as integer, print as character
+    d    integer, signed decimal
+    f    floating point number
+    o    integer, print as octal
+    s    try to treat as C string
+    t    integer, print as binary (t = „two“)
+    u    integer, unsigned decimal
+    x    integer, print as hexadecimal
+
+* <where>
+    <function_name>
+    <variable_name>
+    <line_number>
+    <file:line_number>
+        break/watch this
+
+* <what>
+    expression
+    file_name::variable_name
+    function_name::variable_name
+    address
+    $register
+
+* thread
+    thread <thread#> // operate on thread nr #
+
+* manipulatin program
+    set var <variable_name> = <value>
+    return <expression>
+
+* sources
+
+    TODO: December 07, 2020
+
+* signals
+
+    TODO: December 07, 2020
+
+* shortcuts
+
+    b N     breakpoint
+    d N     delete breakpoint
+    r       run
+    c       continue
+    f       finish
+    s       step
+    n       next
+    p X     print
+    bt      backtrace/where
+    u       up
+    d       down
+    q       quit

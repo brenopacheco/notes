@@ -77,5 +77,90 @@
     - Auto-delete :: wether it is deleted when last queue is unbound from it
     - Arguments   :: optional, used by plugins and broker-specific features
 
+* Best practices
 
+summary:
+
+    - 1 connection for publishing
+    - 1 connection for consuming
+    - 1 connection per thread
+    - no closing/opening conns repeatedly
+    - keep queues short
+    - limit queue length
+    - lazy queues for availability and NO for performance
+    - use transient messages
+    - use multiple queues and consumers (bc. single thread)
+    - disable manual acks/publish confirms (or every X msgs)
+    - no multiple nodes for throughput. use 2 for safety
+    - enable HiPE
+    - disable unused plugins
+
+https://www.youtube.com/watch?v=HzPOQsMWrGQ&list=WL&index=120
+
+1 connection for publishing
+1 connection for consuming
+1 connection per thread
+
+dont open/close connection repeatedly
+    1 TCP package per publish
+    ~20 TCP packages to open and publish
+
+short queues are fast
+    -> try to consume as soon as it is published
+    i.   queue doesn't get written to disk
+    ii.  server takes time to load if queue is long
+    iii. nodes take time to sync
+    iv.  messages get indexed
+
+queues are single threaded
+    -> maximum throughput of 15.000 messages/s
+    -> may be split into multiple queues (sharding)
+
+consume -> the server pushes messages
+get -> client pull messages (much slower)
+
+we can auto-ack every X messages instead of EVERY msg
+
+good to keep number of queues small < 1000
+
+use auto deleted / temporary queues
+
+for a message to survive a server restart:
+    durable exchange
+    durable queue
+    persistent message (delivery_mode=2)
+
+for high throughput use non-durable queues
+
+publish-confirm:
+    makes sure consumer receives message
+    many clients miss this features
+    some clients do not republish if it is not confirmed
+    does not need to block 
+
+prefetch:  number of messages sent to client before it needs
+           to acknowledge it
+           -> unchecked messages remain in RAM of server and client
+           -> may cause Out of Ram exception
+           -> if client stops for some reason, problems arises
+
+always reject messages that fails
+do not set unlimited prefetch values
+
+scalability will require load balancing
+
+filesystems
+    XFS is fastest
+
+HiPE : high performance erlang
+       compiles rabbitmq
+       20-80% better thorughput
+       increased boot time
+
+
+use memory off-heap
+do not embbed small messages (<4k) -> worses ram usage
+channel max is too big, reduce it
+use TCP keepalive instead of AMQP heatbeat (clients do not implement it)
+    -> test conn for 2 mins. if no answer, it's dead
 

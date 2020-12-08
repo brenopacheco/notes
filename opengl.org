@@ -1,0 +1,423 @@
+#+title: OpenGL study
+
+* Libraries
+
+    <GL/glut.h>
+
+      i. contains core gl.h header for OpenGL core functions and
+         types defined by the OpenGL specification.
+      ii. provides utilities functions for:
+          - Platform independent multi-window creation.
+          - Event processing using callback functions.
+          - Input handling.
+          - An 'idle' routine and timers.
+          - Utility routines to generate solid and wire frame objects.
+          - Support for bitmap and stroke fonts.
+          - Miscellaneous window management functions
+
+* Concepts
+* Makefile
+
+    CC     :=gcc
+    CFLAGS := -Wall -Wextra -Wpedantic -std=c++2a
+    LFLAGS := -lGL -lGLU -lglut -lm
+    SRC    :=$(wildcard *.cpp)
+    BINS   :=$(SRC:%.cpp=%)
+    .PHONY: all
+
+    all: $(BINS)
+
+    %: %.cpp
+        @echo "Compiling $<"
+        $(CC) $< -o $@ $(CFLAGS) $(LFLAGS)
+
+    clean:
+        rm -f $(BINS)
+
+* Template
+
+/********************************************************************
+*  File: template.cpp                                               *
+*  Author: brenopacheco                                             *
+*  Description: model template for Glut/OpenGL application          *
+*  Last Modified: 16 oct 2020                                       *
+********************************************************************/
+
+// ===================================================================
+// INCLUDES
+#include <stdio.h>    // i/o (i.e: FILE, EOF, printf, fopen...)
+#include <string.h>   // string manipulation (i.e: strcpy, strlen...)
+#include <stdlib.h>   // macros & funcs. (i.e: NULL, malloc, atoi...)
+#include <math.h>     // functions (i.e: cos, sin, pow...)
+#include <time.h>     // funcs (i.e: time, localtime, clock...)
+#include <GL/glut.h>  // GLUT - OpenGL Utility Toolkit library
+
+
+#define RAD(x)          (M_PI*(x)/180) // convert DEGREE to RAD
+#define GRAUS(x)        (180*(x)/M_PI) // convert RAD to DEGREE
+
+// *** go to -->  https://tutorialspoint.com/c_standard_library/
+// for an overview of functions and macros from the standard library
+
+// ===================================================================
+// COLORS AND PALETTE
+
+typedef struct {
+    unsigned char R;
+    unsigned char G;
+    unsigned char B;
+    unsigned char A;
+} Color;
+
+Color orange = { 255, 128, 0,   0 };
+Color black         = { 0,   0,   0,   0 };
+Color white         = { 255, 255, 255, 0 };
+
+// ===================================================================
+// WINDOW CONFIGURATION STRUCT
+
+typedef struct {
+  GLfloat      pos_x;
+  GLfloat      pos_y;
+  GLfloat      width;
+  GLfloat      height;
+  GLint        buffers;
+  Color        bg_color;
+  unsigned int timer_delay;
+} Window;
+
+Window win = {
+  .pos_x       =  100.0,
+  .pos_y       =  100.0,
+  .width       =  400,
+  .height      =  300,
+  .buffers     =  GLUT_DOUBLE | GLUT_RGB,
+  .bg_color    =  orange,
+  .timer_delay =  1000
+};
+
+// ===================================================================
+// SCENE OBJECTS
+
+typedef struct {
+    GLint   n_vertices;
+    GLfloat pos_x;
+    GLfloat pos_y;
+    GLfloat radius;
+    Color   color;
+} Circle;
+
+typedef struct {
+    GLfloat pos_x;
+    GLfloat pos_y;
+    GLfloat width;
+    GLfloat height;
+    Color   background;
+    Color   border;
+} Square;
+
+
+Square square = { 0, 0, 0.2, 0.2, white, black };
+Circle circle = { 100, 0.0, 0.0, 0.4 };
+
+// ===================================================================
+// FUNCTION DECLARATIONS
+
+void _print_info();
+void _setup_window();
+void _setup_input();
+void _setup_drawing();
+void _setup_timing();
+void _setup_optimizations();
+
+void __handle_keys(unsigned char, int, int);
+void __handle_keys_up(unsigned char key, int, int);
+void __handle_special_keys(int, int, int);
+void __handle_special_keys_up(int, int, int);
+void __handle_mouse_click(int, int, int, int);
+void __handle_mouse_active_motion(int, int);
+void __handle_mouse_passive_motion(int, int);
+
+void __on_idle(void);
+void __on_timer(int);
+
+void __draw(void);
+void __reshape(int, int);
+
+void draw_circle(GLint, GLfloat, GLfloat, GLfloat);
+void draw_square(Square square);
+
+// ===================================================================
+// MAIN
+int main(int argc, char **argv)
+{
+  /*
+    glutInit     :: initialize GLUT library and window system session
+    glutMainLoop :: enter GLUT event processing and drawing loop
+  */
+  glutInit(&argc, argv);
+  _setup_window();
+  _setup_optimizations();
+  _setup_input();
+  _setup_drawing();
+  _setup_timing();
+  _print_info();
+  glutMainLoop();
+}
+
+// ===================================================================
+// SETUP FUNCTIONS
+void _setup_window()
+{
+  /*
+    glutInitWindowPosition :: where window will appear on desktop
+    glutInitWindowSize     :: size of the window
+    glutInitDisplayMode    :: buffers to use (i.e: SINGLE,DOUBLE,RGB)
+    glutCreateWindow       :: builds window. returns GL_FALSE on error
+  */
+  glutInitWindowPosition(win.pos_x, win.pos_y);
+  glutInitWindowSize(win.width, win.height);
+  glutInitDisplayMode(win.buffers);
+  if (!glutCreateWindow("Window name")) exit(1);
+}
+
+void _setup_input()
+{
+  /*
+    glutKeyboardFunc      :: keyboard normal key click down
+    glutKeyboardUpFunc    :: keyboard normal key let go
+    glutSpecialFunc       :: keyboard special key click down
+    glutSpecialUpFunc     :: keyboard special key let go
+    glutMouseFunc         :: mouse click
+    glutMotionFunc        :: mouse click and drag
+    glutPassiveMotionFunc :: mouse move (not clicking)
+  */
+  glutKeyboardFunc(__handle_keys);
+  glutKeyboardUpFunc(__handle_keys_up);
+  glutSpecialFunc(__handle_special_keys);
+  glutSpecialUpFunc(__handle_special_keys_up);
+  glutMouseFunc(__handle_mouse_click);
+  glutMotionFunc(__handle_mouse_active_motion);
+  glutPassiveMotionFunc(__handle_mouse_passive_motion);
+}
+
+void _setup_optimizations()
+{
+  /*
+     glEnable :: enable some feature
+     - GL_POINT_SMOOTH   :: TODO
+     - GL_LINE_SMOOTH    :: TODO
+     - GL_POLYGON_SMOOTH :: TODO
+  */
+  glEnable(GL_POINT_SMOOTH);
+  glEnable(GL_LINE_SMOOTH);
+  glEnable(GL_POLYGON_SMOOTH);
+}
+
+void _setup_drawing()
+{
+  /*
+     glutReshapeFunc :: run when window gets resized
+     glutDisplayFunc :: run when we tell GLUT to redraw screen
+  */
+  glutReshapeFunc(__reshape);
+  glutDisplayFunc(__draw);
+}
+
+void _setup_timing()
+{
+  /*
+     glutTimerFunc :: runs every x seconds. will not run again after
+     glutIdleFunc  :: runs when GLUT doesn't have anything to do
+  */
+  glutTimerFunc(win.timer_delay, __on_timer, 0);
+  glutIdleFunc(__on_idle);
+}
+
+// ===================================================================
+// CALLBACK FUNCTIONS
+
+void __handle_keys(unsigned char key, int x, int y)
+{
+    // TODO
+}
+void __handle_keys_up(unsigned char key, int x, int y)
+{
+    // TODO
+}
+
+void __handle_special_keys(int key, int x, int y)
+{
+    // TODO
+}
+
+void __handle_special_keys_up(int key, int x, int y)
+{
+    // TODO
+}
+
+void __handle_mouse_click(int button, int state, int x, int y)
+{
+    // TODO
+}
+
+void __handle_mouse_active_motion(int x, int y)
+{
+    // TODO
+}
+
+void __handle_mouse_passive_motion(int x, int y)
+{
+    // TODO
+   circle.pos_x = 2*(x / win.width - 0.5);
+   circle.pos_y = -2*(y / win.height - 0.5);
+   printf("x: %d, y: %d, pos_x: %f, pos_y: %f\n", 
+           x, y, circle.pos_x, circle.pos_y);
+}
+
+void __on_idle(void)
+{
+    // TODO
+    /*
+       glutPostRedisplay :: TODO
+    */
+    glutPostRedisplay();
+}
+
+void __on_timer(int value)
+{
+  /*
+     glutTimerFunc :: has to be called again to be re-setup
+     ... this function will print current time on the screen.
+         because timeinfo is not standard accross platforms,
+         we convert it and print as ASCII characters
+  */
+  time_t rawtime;
+  time(&rawtime);
+  struct tm* timeinfo = localtime (&rawtime);
+  printf("Current local time and date: %s", asctime(timeinfo));
+  printf("-> Timer has been called %d times\n\n", value);
+  glutTimerFunc(win.timer_delay, __on_timer, ++value);
+}
+
+void __draw(void)
+{
+  /*
+    glClear :: clear a buffer based on  glClearColor
+    GL_COLOR_BUFFER_BIT :: TODO
+    GL_DEPTH_BUFFER_BIT :: TODO
+    glFlush :: forces gl commands to be executed NOW
+    glutSwapBuffers :: swaps back buffer (drawing)
+                       with window buffer
+    ... see here for buffers
+    ... https://www.glprogramming.com/red/chapter10.html
+  */
+  glClear(GL_COLOR_BUFFER_BIT); 
+  draw_circle(circle.n_vertices,
+              circle.pos_x,
+              circle.pos_y,
+              circle.radius);
+  draw_square(square);
+  glFlush();                   
+  glutSwapBuffers();          
+}
+
+void __reshape(int width, int height)
+{
+  /*
+    glClearColor           :: color to clear drawing buffer with
+    glViewport             :: TODO
+    glMatrixMode           :: TODO
+    glLoadIdentity         :: TODO
+    gluOrtho2D             :: TODO
+  */
+  win.width = width;
+  win.height = height;
+  glViewport(0, 0, win.width, win.height);
+  glClearColor(win.bg_color.R,
+               win.bg_color.G,
+               win.bg_color.B,
+               win.bg_color.A);
+  // TODO
+  // GLfloat ratio=(GLfloat) win.width/win.height;
+  // GLfloat ratio1=(GLfloat) win.height/win.width;
+  // glViewport(0, 0, width, height);
+  // glMatrixMode(GL_PROJECTION);
+  // glLoadIdentity();
+  // if(width < height)
+  //   gluOrtho2D(-1, 1, -ratio1, ratio1);
+  // else
+  //   gluOrtho2D(-ratio, ratio, -1, 1);
+  // glMatrixMode(GL_MODELVIEW);
+  // glLoadIdentity();
+}
+
+// ===================================================================
+// AUXILIARY FUNCTIONS
+
+void _print_info() {
+  printf("\nApplication started.\n");
+}
+
+// ===================================================================
+// MODELS
+
+/* Square model.
+ * square: Square to draw.
+ */
+void draw_square(Square square)
+{
+    /*
+     * glBegin      :: starts defining object
+     * glEnd        :: finish defining
+     * glColor3f    :: color to use
+     * glVertex2f   :: define a vertex in 2D
+     * GL_POLYGON   :: polygon object. paint background
+     * GL_LINE_LOOP :: line object
+     */
+
+    GLfloat x0 = square.pos_x;
+    GLfloat x1 = square.pos_x + square.width;
+    GLfloat y0 = square.pos_y;
+    GLfloat y1 = square.pos_y + square.height;
+
+    glBegin(GL_POLYGON);{
+        glColor3f(square.background.R, 
+                square.background.G, 
+                square.background.B);
+        glVertex2f(x0,y0);
+        glVertex2f(x1,y0);
+        glVertex2f(x1,y1);
+        glVertex2f(x0,y1);
+    }glEnd();
+
+    glBegin(GL_LINE_LOOP);{ 
+        glColor3f(square.border.R, square.border.G, square.border.B);
+        glVertex2f(x0,y0);
+        glVertex2f(x1,y0);
+        glVertex2f(x1,y1);
+        glVertex2f(x0,y1);
+    }glEnd();
+}
+
+/* Circle model.
+ * n: number of vertices of the circle
+ * x0, y0: position of circle center on window
+ * r: circle radius */
+void draw_circle(GLint n, GLfloat x0, GLfloat y0, GLfloat r)
+{
+  glBegin(GL_POLYGON);{
+    float deg_step = 360.0 / n;
+    float deg_angle = deg_step;
+    do {
+      deg_angle += deg_step;
+      GLfloat c = 1.0 * deg_angle / 360.0;
+      glColor3f(c,0.0,c);
+      GLfloat x = r * cos(RAD(deg_angle)) + x0;
+      GLfloat y = r * sin(RAD(deg_angle)) + y0;
+      glVertex2f(x,y);
+    } while(deg_angle < 360);
+  }glEnd(); // brackets are mostly for indentation
+}
+
+

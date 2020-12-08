@@ -300,3 +300,40 @@ ts-node  :: allows node to run typescript directly (run time)
 typescript 
 ts-loader :: typescript loader for webpack 
 
+* dependencies 2
+
+react              :: provides the Component class
+react-dom          :: plugs components into the DOM
+babel              :: transpiles most syntaxes to ES5. uses plugins to do it.
+babel-preset-env   :: transpiles most ES6 features to ES5
+babel-preset-react :: transpiles react ES6/JSX features to ES5
+babel-loader       :: babel driver used by webpack
+babel-core         :: cli tool for running babel
+webpack            :: bundles js and css into one file. uses babel
+webpack-dev-server :: server and live reload for react app
+webpack-cli        :: cli tool for running webpack commands
+
+* react with CDNs
+
+    #+begin_example html
+
+        <html>
+        <script src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
+        <script src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
+        <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
+
+        <body>
+            <div id="root"></div>
+            <script type="text/babel">
+                class Hello extends React.Component {
+                    render() {
+                        return <h1>Hello {this.props.name}</h1>
+                    }
+                }
+                ReactDOM.render(<Hello name="World!" />, document.getElementById('root'))
+            </script>
+        </body>
+
+        </html>
+    
+    #+end_example

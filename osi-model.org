@@ -1,0 +1,15 @@
+#+title: OSI model
+
+Layer 7 :: Application   - string with headers, content-type, etc...
+Layer 6 :: Presentation  - encrypts layer 7 strings
+Layer 5 :: Session       - attaches a tag to the data
+Layer 4 :: Transport     - splits data and attaches ports
+Layer 3 :: Network       - builds packet: attaches ip addresses to data
+Layer 2 :: Data Link     - build frames: split packets and add MAC addresses
+Layer 1 :: Physical      - byte stream
+
+-> all data is send in Layer 1 to everyone
+-> network card uses frames (Data Link) to identify from and to whom
+-> OS identifies the port to send the packets
+-> OS identifies session?
+-> http client apply decription and handles request

@@ -1,0 +1,35 @@
+#+title: CSS Flex and grid
+
+* FLEX
+
+    property           apply to     what do
+    #========================================================================
+    justify-content    container    positions ITEMS across main axis
+    align-items        container    positions ITEMS across cross axis 
+    align-content      container    positions ROWS accross cross axis
+    flex-wrap          container    items should break into new rows
+    align-self         item         applies align rule to itself 
+    flex-grow          item         item size proportion across main axis
+    margin-  auto      item         another way to position ITEMS in main axis
+                                    in this case, justify-content is overriden
+
+* GRID
+
+    property                 apply to     what do
+    #========================================================================
+    grid-template-columns    container    define column widths
+    grid-template-rows       container    define row heights
+    grid-auto-rows           container    define default row
+    grid-row-gap             container    gaps row items
+    grid-column-gap          container    gaps column items
+    grid-gap                 container    gaps cols and rows
+    grid-template-areas      container    define areas
+    grid-auto-flow           container    item insertion algorithm
+    justify-content          container    align items horizontaly
+    align-content            container    align items vertically
+    justify-items            container    aligm item horizontally inside area
+    align-items              container    align item vertically inside area
+    grid-column-start        item         defines where item start
+    grid-column-end          item         defines where item start
+    grid-column              item         defines start/end
+    grid-area                item         identify item in area

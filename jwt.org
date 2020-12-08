@@ -1,0 +1,21 @@
+#+title: JWT tokens
+
+* intro
+
+    jwt.sign -> uses a secret to sign, hashes a payload into the token
+    jwt.verify -> uses the secret to verify. decodes the payload
+
+    1. user authenticates -> i.e: receives a jwt token
+        const token = jwt.sign(payload, secret_key)
+        res.send(token)
+        -> secret key comes from environment
+        -> payload is used for identification (maybe authorization?)
+
+    2. user access endpoint 
+        .../get/whatever
+        const token = req.headers["authorization"]
+        connst token_body = token.slice(7)
+        jwt.verify(token_body, secret_key, callback(err, payload))
+        -> token is passed in the header
+        -> server tries to authenticate first
+        -> after verification of token authorization may be done with payload
