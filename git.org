@@ -2,9 +2,26 @@
 
 * Glossary
 
-    - index
-    - staging area
-    - cache
+    index/cache/staged -> all refer to files git is tracking. the files must
+        have been at some point COMMITED or STAGED. they may be changed or
+        not, but will still be part of the index/cache
+        
+
+    
+
+
+
+
+    - index     :: all files git knows about (is tracking)
+
+    - untracked :: changes/files not in git
+    - unstaged  :: changes/files in git not marked for commit
+    - staged    :: changes/files in git marked for commit
+
+
+
+    - staging area :: 
+    - cache        ::
     - staged    ::
     - tracked   :: 
     - indexed   :: 
@@ -80,3 +97,15 @@
 * bisect
 * rm
 * reset
+
+* NOTES
+
+git rm --cached removes the file from the index but leaves it in the working
+directory. This indicates to Git that you don't want to track the file any
+more.
+
+git reset HEAD leaves the file as a tracked file in the index, but the
+modifications cached in the index are lost. This has the effect as if the file
+in cache had been over written by the file in HEAD (and the working tree file
+being untouched)
+

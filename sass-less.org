@@ -1,0 +1,31 @@
+
+
+
+// defining variables
+$someVar: rgb(1, 1, 1);
+
+// imports _header.sass
+@import "./header";
+
+// mixins: multiple properties named to apply in other places
+@mixin flexCenter($direction) {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: $direction;
+}
+
+// example using vars, nested properties and mixins
+button {
+    background: $someVar;          // uses variable
+    @import flexCenter(column);    // apply flexCenter properties
+    @extend header;                // inherits header class properties
+    color: black;
+    div {                          // same as -> button div { ... }
+        color: white; 
+        &:hover {}                 // adds a hover
+        &::after {}                // adds after pseudo element
+    }
+}
+
+

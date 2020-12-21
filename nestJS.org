@@ -1,0 +1,58 @@
+#+title: Nest JS framework
+
+    https://github.com/juliandavidmr/awesome-nestjs
+    - backend framework
+    - provides dependency injection
+    - mainly typescript oriented
+
+* Setup
+
+    
+    $ npx @nestjs/cli new project-name
+
+
+
+    project-name
+    ├── src
+    │   ├── app.controller.spec.ts # unit test for controller
+    │   ├── app.controller.ts      # CONTROLLER with a single route
+    │   ├── app.module.ts          # root MODULE of the app
+    │   ├── app.service.ts         # SERVICE with a single method
+    │   └── main.ts                # entry point. NestFactory to create an Nest app instance
+    ├── package.json               # regular package.json file
+    ├── tsconfig.json              # typescript configs
+    ├── tsconfig.build.json        # ???
+    └── nest-cli.json              # ??
+
+    packages for building from root: 
+    see https://dev.bartwijnants.be/nestjs-from-scratch/
+
+
+    - @nestjs/core
+    - @nestjs/common
+    - rxjs
+    - reflect-metadata
+
+* Controllers
+    https://docs.nestjs.com/controllers
+
+    handle incomming requests and returns responses
+
+    import { Controller, Get } from '@nestjs/common';
+
+    @Controller('cats')              // handles /cats
+    export class CatsController {
+        @Get()
+        findAll(): string {
+            return 'This action returns all cats';
+        }
+
+        @Get(':id')
+        findOne(@Param('id') id: string): string {
+            console.log(params.id);
+            return `This action returns a #${id} cat`;
+        }
+    }
+
+
+

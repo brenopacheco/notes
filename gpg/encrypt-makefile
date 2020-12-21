@@ -1,0 +1,39 @@
+# This example illustrates how to encrypt and decrypt a document with gpg
+# By default, encrypted docs are in binary format. The -a flag wraps the
+# content in ASCII characters. We add signature using -s flag.
+# There are 2 main ways to encrypt
+# 	--encrypt :: default encryption using public keys. you provide any number
+# 				 of public keys to use through the -r flag. the public keys
+# 				 used are the RECIPIENTS of the message, and only they can
+# 				 decrypt it using their private keys. also called assymetric
+# 	--symmetric :: do not use keys for encryption. uses a passphrase
+# You can then --decrypt the message using a private key if you are one of
+# the RECIPIENTS of the message. To --verify that the message has not been
+# tempered and was indeed authentic, you must provide the public key of the
+# sender / message owner. I don't think you can sign/verify symmetricly
+# encrypted messages
+
+all: clean doc doc.asc doc.sym.asc decrypt
+
+doc.asc:
+	@echo -e "\n-e, --encrypt    :: encrypt using public keys"
+	gpg -eas --output doc.asc doc 
+
+doc.sym.asc:
+	@echo -e "\n-c, --symmetric  :: do not use keys. encrypts with a passphrase only"
+	gpg -ca --output doc.sym.asc --batch --passphrase 123 doc
+
+decrypt:
+	@echo -e "\n-d, --decrypt    :: decrypt data using default private key or a passphrase"
+	gpg -d doc.asc
+	@echo -e "\n"
+	gpg -d --batch --passphrase 123 doc.sym.asc 
+
+clean:
+	rm -f doc
+	rm -f doc.asc
+	rm -f doc.sym.asc
+
+doc: 
+	@echo -e "\nWritting doc..."
+	@echo "Lorem ipsum dolor sit amet, consectetur adipisicing" > doc

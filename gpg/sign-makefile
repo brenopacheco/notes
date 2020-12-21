@@ -1,0 +1,43 @@
+# This example illustrates how to sign documents with gpg and  verify
+# signed documents. signing uses default private key. there are 3 main ways:
+# 	--sign 			: will compress the file and and add the signature
+# 	--clar-sign 	: adds the signature but keeps content readable
+# 	--detach-sign 	: do not modify the file. spits out only the signature
+# the signature is always related to the content of the file and the private
+# key used for signing. any modification and a BAD signature will be revealed
+# upon --verify.
+# Verification is done using the public key of the private key used for 
+# signing. To verify a detached signature we must provide the document it
+# is signing and the signature file.
+
+all: clean doc doc.sig.asc doc.clear-sig.asc doc.detach-sig.asc verify
+
+doc.sig.asc:
+	@echo -e "\n--sign       :: Signing document"
+	gpg --output doc.sig.asc --sign -a doc
+
+doc.clear-sig.asc:
+	@echo -e "\n--clear-sign :: Signing document but keeping it readable"
+	gpg --output doc.clear-sig.asc --clear-sign -a doc
+
+doc.detach-sig.asc:
+	@echo -e "\n--detach-sign :: Signing document in a separate file"
+	gpg --output doc.detach-sig.asc --detach-sign -a doc
+
+verify:
+	@echo -e "\nVerifying signature :: --sign"
+	gpg --verify doc.sig.asc
+	@echo -e "\nVerifying signature :: --clear-sign"
+	gpg --verify doc.clear-sig.asc
+	@echo -e "\nVerifying signature :: --detach-sign -> requires doc and signture"
+	gpg --verify doc.detach-sig.asc doc
+
+clean:
+	rm -f doc
+	rm -f doc.sig.asc
+	rm -f doc.clear-sig.asc
+	rm -f doc.detach-sig.asc
+
+doc: 
+	@echo -e "\nWritting doc..."
+	@echo "Lorem ipsum dolor sit amet, consectetur adipisicing" > doc
