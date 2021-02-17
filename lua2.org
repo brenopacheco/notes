@@ -1,0 +1,1501 @@
+* clojures.lua
+---[[ clojures
+
+-- a closure is a function that accesses one or more local variables from its
+-- enclosing function. Those variables keep their values across successive
+-- calls to the closure. each clojure has it's own copy of the enclosing
+-- variables.
+
+function generator(number)
+    local i = number
+    return function ()
+        return i
+    end
+end
+
+local clojure_1 = generator(1)
+local clojure_2 = generator(2)
+
+print(clojure_1()) -- clojure 1 has access to i which it knows as 1
+print(clojure_2()) -- clojure 1 has access to i which it knows as 2
+
+--]]
+* comparisons.lua
+--[[ operators
+
+    nil -> evals to false
+    0, "", etc -> evals to true
+
+    and or not >  <  >=  <=  ~=  ==
+
+--]]
+
+local var = 1
+
+print(var or nil)  -- 1
+print(var and nil)  -- nil -> evals to false
+
+if ((var and not nil) and (var and 1)) or (var == 1 or var >= 0)  then
+    print("what")
+elseif #"string" > 3 and var then
+    print("wow")
+else
+    print("false")
+end
+
+-- comment
+function a(arg)
+    return { arg }
+end
+
+
+a(3)
+
+* for.lua
+! /usr/bin/env lua
+--
+-- File:   /home/breno/lua/for.lua
+-- Author: breno
+-- Email:  breno@Manjaro
+-- Date:   Wed 23 Dec 2020 05:00:56 PM WET
+-- vim:    set ft=lua
+
+
+local servers = { "bashls", "jsonls" }
+
+
+for _,s in pairs(servers) do
+    print(s)
+end
+
+
+
+dwad
+* functions.lua
+
+
+-- declare function
+local function add(arg)
+    print("from add")
+    if arg then
+        add(nil)
+    end
+end
+
+add(1)
+
+-- assign function to variable
+local fun = function (arg)
+    if arg then
+        print("add2")
+    end
+    -- fun(nil) is indefined
+end
+
+fun(1)
+
+-- return multiple values
+
+local fun2 = function ()
+    return 1, 2
+end
+
+print(fun2())
+
+print("hello")
+
+table.
+
+
+
+
+
+
+
+
+
+
+* io.lua
+--[[ io library
+
+    - 2 ways of iteracting:
+        1. use EXPLICIT file descriptors
+            save fd to variable and call functions
+        2. use IMPLICIT file descriptors
+            set input / output in io table and use it's functions
+
+    standard file descriptors
+        - io.stdout, io.stdin, io.stderr
+        * we don't close/open these descriptors
+
+    io.open()         -> opens file and returns descriptor
+    io.input(fd)      -> sets fd as default input
+    io.output(fd)     -> sets fd as default output
+    io.read()/file:read()       -> read from file
+    io.write()/file:write()     -> write to file
+    io.close()/file:close()     -> close file
+
+    io.lines()/file:lines()        -> return iterator over lines
+    io.flush()/file:flush()        -> saves written data to file
+    io.tmpfile()                   -> returns temporary file fd
+    io.type(...)                   -> checks if file handle is valid
+    file:seek(...)                 -> sets and gets file position
+    file:setvbuf(...)              -> defines when to flush
+
+    special:
+        io.popen(prog) -> creates a pipe and returns handle. i.e:
+        for line in io.popen("ls -l"):lines() do print(line) done
+
+--]]
+--[[ summary
+
+EXPLICIT
+    file = io.open("/tmp/tmpf", "wr+") -- open file r/w
+    file:write("file contents")        -- write
+    content = file:read()              -- write
+    file:close()                       -- close file
+
+IMPLICIT
+    file = io.open("/tmp/tmpf", "wr+") -- open file r/w
+    io.output(file)                    -- sets default output
+    io.input(file)                     -- sets default input
+    io.write("file contents")          -- write to default out
+    content = io.read()                -- read from default in
+    io.close(file)                     -- close file
+
+--]]
+--[[ implicit fd example
+
+-- sets default output file
+io.output(io.stdout)
+
+-- write to default output file
+io.write("writing to stdout")
+
+-- open file in write mode
+fd = io.open("/tmp/tmpfile22", "w+")
+
+-- set default output file
+io.output(fd)
+
+-- write to default output file
+io.write("this will be read from file")
+
+-- close default output file
+io.close()
+
+-- open file in read mode
+fd = io.open("/tmp/tmpfile22", "r")
+
+-- set default input file
+io.input(fd)
+
+-- read default input file
+content = io.read()
+
+-- close default input file
+io.close(fd)
+
+print("\n" .. content)
+
+--]]
+---[[ explicit fd example
+
+-- assigns stdout file descriptor
+file = io.stdout
+
+-- write file's output
+file:write("writing to stdout")
+
+-- open file in write mode and assign fd
+file = io.open("/tmp/tmpfile22", "w+")
+
+-- write to default output file
+file:write("this will be read from file")
+
+-- close file
+file:close()
+
+-- open file in read mode
+file = io.open("/tmp/tmpfile22", "r")
+
+-- read the content from file
+content = file:read()
+
+-- close file
+file:close()
+
+print("\n" .. content)
+
+--]]
+
+* loops.lua
+---[[ clojures
+
+-- a closure is a function that accesses one or more local variables from its
+-- enclosing function. Those variables keep their values across successive
+-- calls to the closure. each clojure has it's own copy of the enclosing
+-- variables. a function that creates a clojure is called a factory.
+
+function factory(number)
+    local i = number
+    return function() return i end
+end
+
+local clojure_1 = factory(1)
+local clojure_2 = factory(2)
+
+print(clojure_1()) -- clojure 1 has access to i which it knows as 1
+print(clojure_2()) -- clojure 1 has access to i which it knows as 2
+
+--]]
+---[[ generic for
+
+    -- for [element] in [iterator]
+    -- [iterator] is a function that returns the /next value/ in very call
+    -- [element] will hold the value returned by [iterator]
+    function iterator (tab)
+        local i = 0
+        return function () -- returns the "next" function
+            i = i + 1
+            return tab[i]
+        end
+    end
+
+    for i in iterator({"a", "b", "c"}) do
+        print(i)
+    end
+
+    -- generic for does the following:
+    -- creates a next function from the iterator factory
+    -- calls next function and assigns to [element] on every cycle of loop
+
+--]]
+
+
+
+
+
+* math.lua
+--[[ maths
+operations
+    ^, *, /, %, +, -
+libraries
+    math, string, table, i/o, os, debug
+
+math
+    acos, asin, ceil, cos, deg,
+    exp, floor, huge, log, log10
+    max, min, pi, rad, random,
+    randomseed, sin, tan
+--]]
+
+print(2+5* ( 4-2 ))
+print(math.pi)
+print(math.random())
+print(math.random(1, 10)) -- pseudo, reseed
+math.randomseed(os.time())
+print(math.random(1, 10))
+
+
+print(math.floor(0.6/0.1)) -- ~ 6.0000014/1.0000014 ~> 5.99999...
+print(math.floor(0.6*10)) -- ~ 6.0000014*10 ~> 6.00001...
+
+* metatables.lua
+--[[
+metatables
+
+    -> has metamethods
+    -> allows new operations on tables such as
+        table_1 + table_2 (metamethod __add)
+    -> by default tables have no metatable
+        t = {}
+        print(getmetatable(t))   --> nil
+    -> we can setmetatable
+        t1 = {}
+        setmetatable(t, t1)
+        assert(getmetatable(t) == t1)
+    -> any table can be the metatable of any other table
+    -> a group of related tables may share a common metatable 
+--]] 
+
+Set = {}
+
+function Set.new(t)
+    local set = {}
+    for i, l in ipairs(t) do 
+        print()
+
+        set[i] = l
+    end
+    return set
+end
+
+local set = Set.new({ "wow", "nice" })
+print(set[2])
+
+* multival2.lua
+-- explained here
+-- https://www.lua.org/pil/5.1.html
+
+
+
+-- When we call a function as a statement, Lua discards all of its results.
+-- When we use a call as an expression, Lua keeps only the first result
+
+function a ()
+    return 1, 2, 3   -- return multival 1  2  3
+end
+
+function b ()
+    -- return a()        -- returns 1 2 3
+    -- return 1, 2, 3    -- returns 1 2 3
+    -- return (a())      -- returns 1
+    -- return (1, 2, 3)  -- invalid
+end
+print(b())
+
+
+
+-- If a function has no results, or not as many results as we need, Lua
+-- produces nils: x,y = foo0()      -- x=nil, y=nil
+* multival.lua
+-- https://benaiah.me/posts/everything-you-didnt-want-to-know-about-lua-multivals/#fn1
+
+--[[ varargs
+-- ... is varargs, comes last
+
+local function two_values() return "first", "second" end
+local tab = {two_values()}
+print(tab[1], tab[2])
+  -- prints "first second"
+
+local function multival_first(x, ...) return x end
+print(multival_first(1, 2, 3))
+  -- prints "1"
+
+local function multival_rest(_, ...) return ... end
+print(multival_rest(1, 2, 3))
+  -- prints "2 3"
+
+--]]
+--[[ select( index, ... )
+
+-- returns ... from the index given to the end
+
+print(select(3, 1,2,3,4))
+  -- prints "3 4"; identical to the last line
+
+-- ]]
+--[[ packing into table
+
+-- 1. You can pack a multival directly into a table literal
+local function pack_multival(...)
+  return {...}
+end
+
+-- Lua's default printing for tables only shows identity; we'll just
+-- print the length instead.
+print(#pack_multival(1, 2, 3))
+  -- prints "3"
+
+-- pack_multival function is equivalent to table.pack
+
+-- 2. You can use table.pack, which is built in to Lua 5.2 and later
+tab = table.pack(1, 2, 3)
+
+print(#tab)
+  -- prints "3"
+
+-- table.pack also sets the "n" field on the table it returns. This is
+-- more efficient than using #tab, which iterates through the table.
+print(tab.n)
+  -- prints "3"
+
+-- get tail argument
+print("last arg: " .. tab[tab.n])
+
+--]]
+--[[ select('#', ...)  -> number of args
+
+local function get_end_of_multival(...)
+  local count = select('#', ...)
+  return select(count, ...)
+end
+
+print(get_end_of_multival(1, 2, 3, 4, 5))
+  -- prints "5"
+
+--]]
+--[[ assigning vararg gets only 1st arg
+-- Assigning the vararg to a single variable will assign that variable
+-- to the _first value_ of the vararg.
+local function try_to_assign_vararg(...)
+  local x = ...
+  return x
+end
+
+print(try_to_assign_vararg(1, 2, 3))
+  -- prints "1"
+--]]
+--[[ vararg cannot be used in clojures
+
+local function try_to_return_vararg_from_closure(...)
+  return function()
+    return ...
+  end
+end
+
+... is not lexically scoped, but rather a dynamically scoped variable with
+certain extra rules like not being reassignable and not being usable outside a
+function that defined it.
+
+Another way to put this would be to say that Lua’s multivals are “second
+class” values. You might be familiar with languages that have second class
+functions, which can’t be assigned to variables or passed as a parameter to a
+functions. This is similar, with the notable exception that we can pass the
+vararg to another function. We just can’t save it in a variable, save it in a
+closure, or manipulate it in certain ways.
+
+--]]
+--[[ cutoffs
+
+local function returns_three_values()
+  return 1, 2, 3
+end
+
+print(returns_three_values())
+  -- prints "1 2 3"
+
+print(#{returns_three_values()})
+  -- prints "3"
+
+print(returns_three_values(), 4, 5)
+  -- prints "1 4 5"
+
+print(#{returns_three_values(), 4, 5})
+  -- prints "3"
+
+print(4, 5, returns_three_values())
+  -- prints "3"
+
+-- a unction call can only return multiple values into a multival if it is the
+-- last thing in the multival.
+
+
+-- This also applies to the vararg, ..., in function definitions:
+
+local function f(...)
+  return ..., 4, 5 -- gets evaluated to 1st item, 4, 5
+end
+
+print(f(1, 2, 3))
+  -- prints "1 4 5"
+
+
+--]]
+---[[ print(select("#", print("a"), print("b"), print("c")))
+
+-- When a multival contains a call to a zero-return-value function before the
+-- end of the multival, a nil is inserted where the function’s return value
+-- would go.
+print(select("#", print("a"), print("b"), print("c")))
+
+-- basically prints "a" and "b" are expanded to nils before the multival end
+-- with "c"'s print
+
+--]]
+--[[ tail call elimination
+
+
+    when a recursive function's return value can be saved in a variable,
+    we do not need to keep the function call in the call stack, but
+    simply keep track of the value. this is called tail call elimination.
+
+    multival returns break tail call elimination and thus limit the
+    depth of a recursive call
+
+
+--]]
+
+-- There is NO distinction between {nil, nil} and {} in Lua.
+-- But varargs expands ... nils i.e: print(nil, nil) -> nil nil
+
+
+-- Multivals are Data Structures, Just Bad Ones
+
+-- What all these different examples of multival quirks demonstrate is that
+-- multivals are just another data structure. (I find this case is made best
+-- by how tail call elimination doesn’t work when recursing within a multival,
+-- just like it wouldn’t work within a table literal.) They aren’t exceptions
+-- to the rules that data structures follow - in fact, they have extra rules
+-- that tables don’t. To sum up:
+
+--     Multivals cannot be assigned to variables. They can only referred to as
+--     literals, function call expressions, or the vararg .... The vararg
+--     cannot be used outside the function that creates it (including within
+--     closures made within that function). Multivals are cut off at the first
+--     value when inserting them into another multival before its end. Unlike
+--     tables, multivals have a built-in length that is unrelated to the
+--     arrangement of nils within the multival. This length can be retrieved
+--     with select("#", ...). When a multival contains a call to a
+--     zero-return-value function before the end of the multival, a nil is
+--     inserted where the function’s return value would go. When a function
+--     makes a recursive call within a multival, tail call elimination is not
+--     applied. Recursing too many times within a multival will thus blow the
+--     stack. Unpacking too many values from a table into a multival will
+--     result in an error. Trying to call or return from a function with too
+--     many arguments will result in an error. This limit is much lower than
+--     the previously-mentioned limit on unpacking tables, being just below
+--     255 items.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+* new.lua
+
+
+
+
+
+* notes.lua
+print("hello world")
+print("hello" .. "world")
+print([[
+    multiline
+    string
+]])
+
+-- single line comment
+--[[ block comment starts with --[[
+-- and end with ]]
+
+--[[
+print([[
+    add a dash to the beginning of this
+    comment to uncomment print statement
+]]
+--]]
+
+--[[
+*!/usr/bin/env lua
+to start a script running lua code
+--]]
+* oo.lua
+
+
+
+
+-- The colon is for methods that pass self as the first parameter
+-- x:bar(3,4) should be the same as 
+-- x.bar(x,3,4).
+* pairs_ipairs.lua
+
+
+tab = { "hi", 26, key = "value" }
+
+-- for key, value in pairs(t) do
+    
+-- end
+
+
+
+* patterns.lua
+
+--[[ patterns
+    lua does not do regexes, but still matches patterns.
+    build patterns using "character classes"
+
+    %a      letter
+    %c      ctrl character
+    %d      digit
+    %l      lowercase letters.
+    %p      punctuation characters.
+    %s      space characters.
+    %u      uppercase letters.
+    %w      alphanumeric characters.
+    %x      hexadecimal digits.
+    %z      character with representation 0.
+    %.      escape magic character "."
+    [set]:  characters in set.range with a '-'. %x can also be used. 
+        [0-7%l%-] octal digits or lowercase letters or '-' character.
+    [^set]: complement of set
+
+    %A:     complement of %a
+    %S:     complement of %s
+    ...
+
+    magical characters
+    %       escapes magical characters
+    \       normal escape character
+    .       any character
+    +       one or more
+
+    star    zero or more
+    -       one or more greedy operator 
+            by default matches are the longest, - will match shortest
+    ?       zero or one
+    ^       beggining of string
+    $       end of string
+    []      defines a set
+    ()      groups matches
+    %b      matches balanced string in form of '%bxy'
+            %b() will match anything inside a ()
+
+
+    captures
+
+--]]
+print( string.gsub("hello world", "%s", "_") )
+* popen.lua
+!/bin/env lua
+-- File:   popen.lua
+-- Author: breno
+-- Email:  breno@Manjaro
+-- Date:   Thu 24 Dec 2020 02:32:03 PM WET
+-- vim:    set ft=lua
+
+-- run command and performs a replace in each line
+-- for line in io.popen("ls -la"):lines() do
+--     print((string.gsub(line, ".-(%S+)$", "%1")))
+-- end
+
+-- takes arguments from stdin and outputs to stdout
+io.input(io.stdin)
+io.output(io.stdout)
+for line in io.lines() do
+    io.write((string.gsub(line, ".-(%S+)$", "%1")) .. "\n")
+end
+
+
+* scopes.lua
+--[[
+    -> global :: available across the application
+                 best practice is to used _G.var
+                 since lua keeps global vars in a
+                 regular table called environment
+    -> local :: available to scope (fun or file)
+    function a() ... sets a as global
+--]]
+
+-- global_var = 1
+-- _G.global_var = 1
+-- local local_var = 2
+
+-- local function a()
+--     local tmp = 1
+--     print("1. " .. tmp)
+-- end
+-- a()
+
+
+function b()
+    local x
+    if not x then x = 1 and print("setting to 1") end
+    if x then x = x + 1 and print("incrementing") end
+    return x
+end
+
+print(b())
+print(b())
+print(b())
+* string_lib.lua
+--[[ string library
+    byte char find format gmatch gsub
+    len lower match patterns rep
+--]]
+
+-- print("len: " .. #"string")
+-- print("len: " .. string.len("string"))
+-- print("rep: " .. string.rep("hi ", 5))
+-- print("lower: " .. string.lower("HELLO"))
+-- print("upper: " .. string.lower("hello"))
+-- print("sub: " .. string.sub("hello", 2, 4))
+-- print("sub: " .. string.sub("hello", 2, 4))
+-- print("char: " .. string.char(99)) -- nr -> ascii
+-- print(string.byte("ab", 1, 2)) -- ascii -> nr
+
+--[[ format
+    d decimal
+    x hexadeciomal
+    o octal
+    f floating point
+    s strings
+    p punctuation
+    l lower case
+    u upper case
+    + 1 or more
+    star 0 or more
+    ? 0 or 1 ocurrance
+--]]
+-- print(string.format("pi: %.4f", math.pi))
+-- print(string.find("hello world", "lo w"))
+-- print(string.match("hello world", "lo w"))
+
+--[[ patterns
+    lua does not do regexes, but still matches patterns.
+    build patterns using "character classes"
+
+    x: character x
+    .: all characters
+    %a: letter
+    %c: ctrl character
+    %d: digit
+    %l: lowercase letters.
+    %p: punctuation characters.
+    %s: space characters.
+    %u: uppercase letters.
+    %w: alphanumeric characters.
+    %x: hexadecimal digits.
+    %z: character with representation 0.
+    %.: escape magic "." character
+    [set]: characters in set.range with a '-'. %x can also be used. 
+        -> [0-7%l%-] octal digits + lowercase letters + the '-' character.
+    [^set]: complement of set
+
+--]]
+print( string.gsub("hello world", "%s", "_") )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+* strings.lua
+
+-- length of string
+print("string has " .. #"string" .. " chars")
+
+-- tostring() coherces any type to string
+print(tostring(14))
+
+print([[
+    multi
+    line
+]])
+
+-- assign multiple vars in 1 assignment
+a, b, c = "hi", "hello" -- c is nil
+
+-- escape sequences
+print("\thello\nworld")
+* tables.lua
+
+--[[ array and matrix
+
+local array = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }
+print(array[1]) -- prints 1 (indexable from 1)
+
+local matrix = { {1,2}, {3,4} }
+print(array[1][2]) -- prints 2
+
+-]]
+--[[ table library
+
+    #table -> returns size of array
+    insert
+    remove
+    sort
+    concat
+    maxn
+    move
+    concat
+    pack
+    unpack
+
+--]]
+--[[ stack and queue
+
+function queue()
+    local queue   = {}
+    queue.enqueue = function(arg) return table.insert(queue, #queue+1, arg) end
+    queue.dequeue = function() return table.remove(queue, 1) end
+    queue.peek    = function() return queue[1] end
+    queue.isempty = function() return #queue == 0 end
+    return queue
+end
+
+function stack()
+    local stack = {}
+    stack.push    = function(arg) return table.insert(stack, 1, arg) end
+    stack.pop     = function() return table.remove(stack, 1) end
+    stack.isempty = function() return #stack == 0 end
+    return stack
+end
+
+--]]
+---[[ pack and unpack
+
+-- pack is as follows
+
+-- pack = function (...)
+--     return { n = select("#", ...), ... }
+-- end
+
+-- for _,v in pairs(pack("a", "b", "c")) do
+--     print(v)
+-- end
+
+-- -- same as:
+-- local tab = table.pack("a", "b", "c")
+
+-- -- pack gives an n value for the number of elements
+-- print("n: " .. table.pack(1,2,3).n)
+
+-- -- unpack returns the element list as a multival
+-- print(table.unpack(tab))
+
+-- -- wonder if n comes too?
+-- print(table.unpack(table.pack("a", "b", "c")))
+
+-- -- n doesn't come from metatable
+-- print(getmetatable(table.pack(1,2,3)))
+
+-- n comes too when packing. it's not in metatable
+-- unpacks ignores the n
+for i,v in pairs(table.pack(1,2,3)) do
+    print("i: " .. i .. " v: " .. v)
+end
+
+
+
+
+--]]
+* tests.lua
+
+
+-- x and print("x is defined") or print("x is not defined")
+
+function tern(cond, texpr, fexpr)
+    if cond then return texpr else return fexpr end
+end
+
+
+-- x = tern(a, 1, 2)
+
+-- print(x)
+
+* trim.lua
+
+-- local function trim (s)
+--     return string.gsub(s, "^%s*(.-)%s*$", "%1")
+-- end
+
+-- local var = "   hello test "
+
+-- print(var)
+-- print(trim(var))
+-- print(var)
+
+print(string.gsub("test", "te", "__"))
+* types.lua
+--[[ types
+
+dynamically typed
+
+types:
+    nil :: default, used to clear and GC
+    Number :: double real number
+    String :: more complex type
+    Boolean :: false = value false or nil
+    Table :: associative array indexable 1
+    Function :: repeatable code segment
+    Userdata :: represent new data types
+    Thread :: co-routines
+
+checking type
+    type(var)
+
+--]]
+
+local some_var = nil
+print(type(some_var))
+
+local bool = false
+local array = { "wow", 12, "14" }
+print(array[1])
+print(array[6])
+

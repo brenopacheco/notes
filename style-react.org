@@ -1,0 +1,156 @@
+#+title: Styling React
+
+* Inline
+
+    - pass style into style={}
+    - uses JSX names for styles
+    - only applies to the element
+
+    #+begin_example javascript
+        const divStyle = {
+          color: 'blue',
+          backgroundImage: 'url(' + imgUrl + ')',
+        };
+        function HelloWorldComponent() {
+          return <div style={divStyle}>Hello World!</div>;
+    #+end_example
+
+* CSS in JS (JSS)
+
+    - pass style tag on top of DOM
+    - style tag only applies to particular element in DOM
+    - automates scoping by generating unique selectors (hashes)
+
+
+    #+begin_example
+        const css = styleBlock => {
+          const className = someHash(styleBlock);
+          const styleEl = document.createElement('style');
+          styleEl.textContent = `
+            .${className} {
+              ${styleBlock}
+            }
+          `;
+          document.head.appendChild(styleEl);
+          return className;
+        };const className = css(`
+          color: red;
+          padding: 20px;
+        `); // 'c23j4' is the hash for style element
+    #+end_example
+
+* Styled components
+
+    - React's implentation of CSS in JS
+    - module styled-components
+
+    #+begin_example
+        import styled from "styled-components";
+        const StyledButton = styled.button`
+          background-color: black;
+          font-size: 32px;
+          color: white;
+        `;
+        const btn = <StyledButton> Login </StyledButton>;
+    #+end_example
+
+* CSS Modules
+
+    - module (file) scope
+    - creates unique className in format: 
+        [filename]_[classname]_[hash]
+
+    #+begin_example Button.module.css
+        .error {
+          color: red;
+        }
+    #+end_example
+
+    #+begin_example 
+        import styles from './Button.module.css';
+        const btn = <button className={styles.error}>Error Button</button>;
+    #+end_example
+
+    will result in:
+
+    #+begin_example html
+        <button class="Button_error_ax7yz">Error Button</button>
+    #+end_example
+
+* Preprocessors
+
+    - sass and less
+
+* Styled-jsx
+
+    - component based
+    - npm install --save styled-jsx
+    - babel tangles it { "plugins": [ "styled-jsx/babel" ] }
+
+    #+begin_example
+        export default () => (
+          <div>
+            <p>only this paragraph will get the style :)</p>
+            { /* you can include <Component />s here that include
+                 other <p>s that don't get unexpected styles! */ }
+            <style jsx>{`
+              p {
+                color: red;
+              }
+            `}</style>
+          </div>
+        )
+    #+end_example
+
+
+* Uncat 
+
+
+inline style
+    render() {
+        const style = {
+            color: 'red'
+        }
+        return <button style={style} />
+    }
+
+css modules :: will make unique id for css class 
+
+    import classes from './Component.module.css'
+    const Component = () => {
+        return (
+            <div class={classes.Red}/>
+        )
+    }
+
+libraries
+
+    Radium :: allows using pseudo selectors and media queries
+    import Radium from 'radium'
+    const style = {
+        ':hover': {
+            backgroundColor: 'green'
+        },
+        '@media (min-width: 500px)': {
+            width: '450px'
+        }
+    }
+    Radium(Component)
+
+    styled-components :: inline styling of components
+    import styled from 'styled-components';
+    const StyledDiv = style.div`
+        color: {props => myprop ? "red" ? "green" }
+        width: 60%;
+        @media (min-width: 500px) {
+            width: 40%;
+        }
+        &:hover {
+            color: black;
+        }
+    `
+    const Component = () => (
+        <StyledDiv alt={true}>
+            ...
+        </StyledDiv>
+    )
