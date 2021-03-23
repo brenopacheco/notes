@@ -1,0 +1,35 @@
+
+const EventEmitter = require('events')
+const emitter = new EventEmitter()
+
+default events:
+- newListener    :: when a listener is added
+- removeListener :: when a listener is removed
+
+API:
+
+Class: EventTarget
+Class: NodeEventTarget
+Class: EventEmitter
+
+    Event: 'newListener'
+    Event: 'removeListener'
+
+    emitter.addListener(eventName, listener)/on(eventName, listener)
+    emitter.once(eventName, listener)
+    emitter.prependListener(eventName, listener)
+    emitter.prependOnceListener(eventName, listener)
+
+    emitter.emit(eventName[, ...args])
+
+    emitter.eventNames()
+    emitter.getMaxListeners()
+    emitter.listenerCount(eventName)
+    emitter.listeners(eventName)
+    emitter.
+    emitter.removeAllListeners([eventName])
+    emitter.removeListener(eventName, listener)/off(eventName, listener)
+    emitter.setMaxListeners(n)
+    emitter.rawListeners(eventName)
+    emitter[Symbol.for('nodejs.rejection')](err, eventName[, ...args])
+

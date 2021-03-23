@@ -1,0 +1,41 @@
+
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width">
+        <script src="https://unpkg.com/react/umd/react.development.js"></script>
+        <script src="https://unpkg.com/react-dom/umd/react-dom.development.js"></script>
+        <script src="https://unpkg.com/react-router/umd/react-router.min.js"></script>
+        <script src="https://unpkg.com/react-router-dom/umd/react-router-dom.min.js"></script>
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    </head>
+    <body>
+        <div id='root'></div>
+        <script type='text/babel'>
+            class Btn extends React.Component {
+                constructor(props) {
+                    super(props)
+                    this.state = {
+                        isToggleOn: true
+                    }
+                }
+                toggle = () => {
+                    this.setState(state => ({
+                        isToggleOn: !state.isToggleOn
+                    }))
+                }
+                render() {
+                    return (
+                        <button onClick={this.toggle} type="submit">
+                            Toggle {this.state.isToggleOn ? "OFF": "ON"}
+                        </button>
+                    );
+                }
+            }  
+
+            ReactDOM.render(<Btn />, document.querySelector('#root'));
+        </script>
+    </body>
+</html>

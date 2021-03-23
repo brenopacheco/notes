@@ -1,0 +1,22 @@
+
+scope :: where a binding for a symbol is valid
+         what binding and symbol it refers to
+         
+    2 ways: lexical x dynamic scoping
+    lexical -> the nesting of scopes matches the structure of the code
+    dynamic -> the nesting of scopes matches the call stack
+
+    fun a() {
+        define x = 2
+        fun b() { define x = 1; c() }
+        fun c() { x = 3 } 
+        call b()          
+    }
+    a()[def x] -> b()[def x] -> c() 
+    b and c are at same level
+    // in lexical scoping, c() sees a's x because of code structure nesting
+    // in dynamic socping, c() sees b's x because of call stack nesting
+
+
+== javascript is lexical scoped, meaning the symbols resolved in a given
+execution context depend on how the code is nested

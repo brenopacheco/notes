@@ -1,0 +1,75 @@
+# Dependencies
+
+## React
+
+- react     ::
+- react-dom ::
+- react-router-dom ::
+- redux/flux :: 
+
+## Babel
+
+- @babel/core         ::
+- @babel/preset-env   ::
+- @babel/preset-react ::
+
+## Webpack
+
+- webpack             ::
+- webpack-cli         ::
+- webpack-dev-server  ::
+- html-webpack-plugin ::
+- ts-loader           :: typescript hook to transpile TS->ES6
+- babel-loader        :: babel hook to transpile ES6->ES5
+- css-loader          :: reads css file as string
+- style-loader        :: inserts css into the page
+
+## Typescript:
+
+- typescript       ::
+- @types/node      ::
+- @types/react     ::
+- @types/react-dom ::
+- @types/jest      ::
+
+## Tests
+
+- jest ::
+
+## Aditional
+
+- dotenv :: loads keys from .env file into process.env variable
+
+
+# Setting up Babel and Webpack
+
+# Setting up Typescript 
+
+# Setting up nodemon
+
+# Configuring jest
+
+
+# Why are all dependencies NOT dev dependencies?
+
+The distinction is meaningful for Node apps because they actually are deployed
+as runtime. So you might not want to deploy development dependencies.
+
+In case of React apps, the end result is a static bundle. So in a sense all
+dependencies are "development dependencies", even React or libraries you use.
+They're used only at the build time.
+
+But putting everything into build dependencies can break some deployment
+scripts that do the initial build on the server. So it's easier to put
+everything into regular dependencies instead.
+
+# Aditional libraries
+
+axios
+moment
+express
+@types/express 
+nodemon 
+ts-node  :: allows node to run typescript directly (run time)
+typescript 
+ts-loader :: typescript loader for webpack 

@@ -1,0 +1,24 @@
+{
+    "name": "static-server-template-tailwind",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "serve": "http-server ./dist -p ${PORT:-8080}",
+        "watch": "livereload ./dist -d -e html,css,js",
+        "start": "npm run watch & npm run serve",
+        "build": "tailwindcss build tailwind.css -o dist/styles.css",
+        "deploy": "echo \"specify deploy cycle\""
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "http-server": "^0.12.3"
+    },
+    "devDependencies": {
+        "eslint": "^7.20.0",
+        "livereload": "^0.9.1",
+        "tailwindcss-cli": "^0.1.2"
+    }
+}

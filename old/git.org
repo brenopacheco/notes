@@ -1,0 +1,105 @@
+#+title: git
+
+* Glossary
+
+    - index/cache/staged -> all refer to files git is tracking. the files must
+        have been at some point COMMITED or STAGED. they may be changed or
+        not, but will still be part of the index/cache
+
+    - index     :: all files git knows about (is tracking)
+
+    - untracked :: changes/files not in git
+    - unstaged  :: changes/files in git not marked for commit
+    - staged    :: changes/files in git marked for commit
+
+
+
+    - staging area ::
+    - cache        ::
+    - staged    ::
+    - tracked   ::
+    - indexed   ::
+    - cached    ::
+    - HEAD      ::
+
+
+* HEAD
+
+    - HEAD   :: which commit i'm looking at
+    - HEAD~1 :: commit's first parent
+    - HEAD~2 :: commit's first parent's first parent
+    - HEAD~3 :: commit's first parent's first parent's first parent
+    - HEAD^1 :: commit's first parent
+    - HEAD^2 :: commit's second parent
+    - HEAD^3 :: commit's second parent
+    #+begin_example
+
+        * 8329384     - HEAD
+        *   f5717b0   - HEAD~1 == HEAD^1
+        |\
+        * | 956c87d   - HEAD~2 == HEAD~1^1
+        | * a8fe411   - HEAD~1^2
+        |/
+        * c7c2590     - HEAD~3 == HEAD~2^1 == HEAD~1^2^1
+        * 86362ff
+
+    #+end_example
+
+
+* stash
+
+    save changes in working dir and index into a stash stack and get
+    a clean HEAD slate.
+
+    - git stash [push]           :: stashes changes. push is optional
+    - git stash -m "message"     :: stashes changes with message
+    - git stash list             :: list stashes
+    - git stash apply stash@{0}  :: applies stash 0, but keep stash
+    - git stash drop stash@{0}   :: removes stash 0
+    - git stash pop              :: applies first stash on stack and removes it
+    - git stash clear            :: removes all stashes
+    - git stash show             :: shows changes in stash 0
+    - git stash show stash@{1}   :: show does not show --untracked
+    - git show stash@{0}^3       :: show --untracked for stash 0
+    - -u|--include-untracked     :: by default, untracked are not stashed
+    - -k|--keep-index            :: do not stash already added files
+
+
+* diff
+
+        (staged)   new file:   world.txt
+        (unstaged) modified:   hello.txt
+
+        git diff          :: shows diffs on UNSTAGED TRACKED FILES
+        git diff --cached :: shows diffs on STAGED FILES (same as --staged)
+        git diff HEAD     :: shows diffs to HEAD (staged and unstaged)
+        git diff file.txt :: shows diff for file
+
+* add
+
+        https://nuclearsquid.com/writings/git-add/
+
+        -N :: track file but do not stage
+        -p :: adds hunks interactively
+        -i :: adds iteractively in different cli
+
+* rebase
+* pull
+* merge
+* push
+* remote
+* bisect
+* rm
+* reset
+
+* NOTES
+
+git rm --cached removes the file from the index but leaves it in the working
+directory. This indicates to Git that you don't want to track the file any
+more.
+
+git reset HEAD leaves the file as a tracked file in the index, but the
+modifications cached in the index are lost. This has the effect as if the file
+in cache had been over written by the file in HEAD (and the working tree file
+being untouched)
+

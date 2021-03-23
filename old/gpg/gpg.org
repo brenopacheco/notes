@@ -1,0 +1,108 @@
+PGP: Pretty Good Privacy
+
+* pgp description
+
+    security and encryption system uses public key cryptography
+
+     -> public key -> private key
+
+     encrypting: use PUBLIC key to encrypt file use PRIVATE key to decrypt
+
+    signing: use PRIVATE key to sign (not encrypt) use PUBLIC  key to verify
+    the origin
+
+             1. the owner signs using PRIVATE key
+             2. the receiver verifies using PUBLIC key
+
+    signing :: garantees a file comes from a sender. a signed file is not
+    encrypted, it's just has a digital signatured built using the owner's
+    private key. when a receiver gets the file, it can use the owner's public
+    key to verifiy that this file was indeed signed by him and was not
+    tempered
+
+    file -[private key]-> signing program -> signed file
+
+    signed file -[public key]-> verification program  -> file + verified
+    message 
+
+    uses:
+        - encryped / signed email
+        - signing git commits
+        - verifiable downloads (like sha1, but better)
+
+* tools
+
+    PGP original tool is not free as in stallman
+    GnuPG
+    OpenPGP 
+
+* Web of Trust
+
+    people will sign the key
+
+
+* GPG
+
+    - generate key
+        gpg --gen-key
+        2048
+
+    - by default, gpg creates a master key pair and subkeys signed by
+      the master key. this is because certification signatures will bind a
+      UID to the master key, and the master key will sign any number of 
+      subkeys which can be for day-to-day work, be lost and revoked, without
+      affecting other keys signed by the master key or signatures to it.
+
+      master key -[signs]-> subkeys
+      master key -[signs]-> other user's master keys
+
+      subkeys are then recognized based on the master keys that signed them
+
+    - to create a single key:
+      gpg --generate-full-key --expert
+        -> choose (8)  (set your own capabilities) RSA
+
+    - create a revocation certificate for backup and save it somewhere safe
+       gpg --output ~/revocation.crt --gen-revoke your_email@address.com
+
+
+
+
+    gpg --list-keys user@email.com
+        uid -- user id
+        pub -- public primary key
+        sub -- public sub-key
+
+    gpg --list-secret-keys user@email.com
+        uid -- user id
+        sec -- secret primary key
+        ssb -- secret sub-key
+
+    gpg --send-key C19B046             // sends public key to key server
+    gpg --list-keys user@email.com     // list local user keys
+    gpg --search user@email.com        // searches in key server and adds
+                                       // to keyring
+    
+    keyring 
+    fingerpring
+    armor -> ASCII armor encases encrypted binary message in ASCII for 
+             sending via e-mail
+
+    revoking :: tell public key server that your key is stale
+rse
+
+* New
+ 
+    1. create gpg key
+        gpg --gen-key
+        gpg --generate-full-key --expert  :: to generate single keypair
+    2. store revocation certificate
+        gpg --output ~/revocation.crt --gen-revoke user@email.com
+        chmod 600 ~/revocation.crt
+    3. import other prople's keys
+        gpg --import name_of_pub_key_file
+        gpg --search user
+        gpg --search-keys search_parameters
+
+
+    ++++ key ID is the SAME for public and private keys

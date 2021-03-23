@@ -1,0 +1,27 @@
+{
+    "name": "static-server-template-tailwind",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "lint:css": "csslint --format=compact src/**/*.css",
+        "lint:js": "eslint  --format=compact src/**/*.js",
+        "lint": "npm run lint:css && npm run lint:js",
+        "serve": "http-server ./src -p ${PORT:-8080}",
+        "watch": "livereload ./src -d -e html,css,js",
+        "start": "npm run watch & npm run serve",
+        "tailwind": "tailwindcss build src/tailwind.css -o src/styles.css",
+        "test": "jest --silent"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "http-server": "^0.12.3"
+    },
+    "devDependencies": {
+        "eslint": "^7.20.0",
+        "livereload": "^0.9.1",
+        "tailwindcss-cli": "^0.1.2"
+    }
+}

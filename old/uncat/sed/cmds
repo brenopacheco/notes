@@ -1,0 +1,10 @@
+nnoremap # yy:exec '!' @"<CR>
+
+sed -n '1,3p'       lorem
+sed -n '/Ll/,3p'    lorem
+sed -n '/Ll/,+1'    lorem
+sed -n '/Ll/,/ad/p' lorem
+sed -n '/Ll/,/enim/p' lorem 
+    --> +3 doesnt work after enim
+
+

@@ -1,0 +1,26 @@
+npm install redux react-redux
+
+
+// ACTION (creator)
+const increment = (amount) => {
+    return {
+        type: 'INCREMENT',
+        payload: amount
+    }
+}
+
+// REDUCER -- defines how to update store
+const counter = (state=0; action) => {
+    switch(action.type) {
+        case 'INCREMENT':
+            return state + action.payload
+    }
+}
+
+// STORE
+let store Redux.createStore(counter)
+
+// DISPATCH
+
+store.dispatch(increment(10))
+

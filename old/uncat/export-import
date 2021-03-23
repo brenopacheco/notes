@@ -1,0 +1,26 @@
+
+
+
+
+default export
+    export default WHAT // -> import WHAT from '...'
+named export
+    export ONE
+    export TWO // import { ONE, TWO } from '...'
+               // import * as EVERYTHING from '...'
+ES6
+    constructor() { this.prop = ... }
+    mymethod()    { ... }
+ES7
+    prop = ...
+    mymethod = () => { ... }
+spread operator
+    const array = [ ...[1,2,3], 4]
+    const obj   = { ...{ a: 1 }, b: 2 }
+rest operator
+    function wow(...args) { //multiple arguments 
+        return args.sort()  // args are stored in array
+    }
+destructuring
+    const [ a, b ] = [ 'hello', 'world'   ];
+    const { a, b } = { hello: 1, world: 2 };

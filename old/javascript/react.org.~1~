@@ -1,0 +1,339 @@
+#+TITLE: React notes
+* Configurations
+
+    - babel
+    - webpack
+    - typescript
+    - jest
+    - nodemon
+    - livereload
+
+* Links 
+    https://www.pluralsight.com/guides/use-interface-props-in-functional-components-using-typescript-with-react
+* Conventions
+    - components are capitalized i.e: Layout.js -> exports default Layout
+
+* Syntax
+    - flow syntax
+    - object spread operator
+    - hashes
+    - sourcemaps
+    - autoprefixed CSS
+    - service worker
+    - web app manifest
+    - progressive web app
+    + offline-first service worker and a web app manifest, meeting all the
+      Progressive Web App criteria.
+
+* Babel
+
+* Webpack
+
+* Typescript
+** Packages and setup
+
+    $ npm i typescript -D
+    $ npm i -D @types/react @types/react-dom
+** Basic Types
+
+    - boolean
+    - number
+    - string
+    - symbol
+    - null :: subtype of all types
+    - undefined :: subtype of all types
+    - Array :: two syntaxes
+               let list: number[] = [1, 2, 3];
+               let list: Array<number> = [1, 2, 3];
+    - tuple :: array with fixed num. of args whose types are known
+               let x: [string, number];
+    - enum :: gets assigned a number. both number and name are accessible
+              numbering starts from 0, but can be defined.
+              enum Color { Red, Green = 99, Blue }
+              let c: Color = Color.Green;
+              let colorName: string = Color[2];
+    - unknown :: can be anything but we don't access arbitrary properties
+                 let notSure: unknown = 4;
+    - any :: like unknown but ts won't check it so we can do anything
+    - void :: when functions do not return anything
+    - never :: for functions with no reachable end point
+               (void): never => { while(true) {} }
+    - object :: any non-primitive type
+    
+    Type assertion :: like casting. you perform special checks:
+
+    let someValue: unknown = "this is a string";
+    let strLength: number = (someValue as string).length;
+    let strLength: number = (<string>someValue).length;
+
+** Interfaces
+
+    - object property interface
+
+    interface ObjectInterface {
+      required:   number;
+      optional?:  string;
+      readonly x: symbol; // set only on object creation like const
+      [index: string]: any; // index signature? it can have anything
+    }
+
+    - function interface 
+
+    interface FunctionalInterface {
+         (arg: string): boolean;
+    }
+
+    let fun: FunctionalInterface = function (...) {...}
+
+    - indexable type interface
+
+    indexable type interface :: describes how we can index into object
+
+    interface Indexable {
+        [index: number]: string; // indexable with a number, returns a string
+    }
+
+    let array: Indexable = ["hello", "world"]
+    array[0]; // hello
+
+    indexing with 100 is the same as indexing with "100"
+    a string index declares that obj.property is also available as obj["property"]
+    so other properties must be a subtype of the indexer:
+          [index: string]: number;
+          length: number; // ok, length is a number
+          name: string; // error, the type of 'name' is not a subtype of the indexer
+
+    make index signatures readonly in order to prevent assignment to their indices:
+        interface ReadonlyStringArray {
+          readonly [index: number]: string;
+        }
+
+        let myArray: ReadonlyStringArray = ["Alice", "Bob"];
+        myArray[2] = "Mallory"; // error!
+
+    - class interface
+
+        interface ClockInterface {
+          prop: string;             // must have property
+          fun(arg: number): void;   // must implement function
+        }
+
+    - constructor interface
+
+        js classes have 2 types: instance type and static type (for ctor).
+        because it's the class instance type implements the interface and
+        not the class static type, we must attach the constructor interface
+        to something else
+
+        interface ObjInterface { ... }
+        interface ObjConstructor { 
+            new(arg: string): ObjInterface;
+        }
+
+        ... this is a little fuzzy. // TODO
+
+        https://www.typescriptlang.org/docs/handbook/interfaces.html#hybrid-types
+
+* React
+
+* Packages
+    react              :: provides the Component class
+    react-dom          :: plugs components into the DOM
+    babel              :: transpiles most syntaxes to ES5. uses plugins to do it.
+    babel-preset-env   :: transpiles most ES6 features to ES5
+    babel-preset-react :: transpiles react ES6/JSX features to ES5
+    babel-loader       :: babel driver used by webpack
+    babel-core         :: cli tool for running babel
+    webpack            :: bundles js and css into one file. uses babel
+    webpack-dev-server :: server and live reload for react app
+    webpack-cli        :: cli tool for running webpack commands
+
+* Scripts
+
+    webpack-dev-server --content-base src --inline --hot
+
+* Components
+* Flux
+
+    pattern for managing data flow in react app
+
+    component -[payload]-> dispatcher -[action]-> store -[event]-> component
+
+    the component (view) dispatches (sends) a payload to whoever is registered
+    the store is registered and filters the event based on it's "type"
+    the store updates itself using the dispatched payload
+    the store emmits an update event to the view interested
+    the component (view) interested in a store must have a listener to the store
+
+    //--- TodoStore.js
+    class TodoStore {
+        this.todos = [];
+        getAll() {
+            return this.todos;
+        }
+        createTodo(text) {
+            this.todos.push(text);
+            this.emit("change");
+        }
+    }
+    const todoStore = new TodoStore;
+    export default todoStore;
+
+    //--- TodoComponent.js
+    import TodoStore from '...';
+    function TodoComponent {
+        const [ todoList, setTodoList ] = useState([]);
+        useEffect(() => {
+            TodoStore.on("change", () => setTodoList(TodoStore.getAll()));
+        }, [])
+        return { todoList.map(todo => <Todo {...todo})/> };
+    }
+    
+* useState
+* useEffect
+
+    - runs after every render
+    - we can pass a list of value which needs to change for it
+      to run, so that it will not run on every render
+    - has access to object's functions i.e: from useState
+    - the return is a cleanup (i.e: componentWillUnmount)
+    - an empty array will cause it to run once on startup
+
+
+    const [value, setValue] = useState('initial');
+
+    useEffect(() => {
+      console.log('mounted. set event listeners');
+      return () => console.log('unmounting...');
+    }, [])  // 
+
+    useEffect(() => {
+      console.log("value changed");
+    }, [value])  // runs every time value changes
+
+
+
+
+
+    https://daveceddia.com/useeffect-hook-examples/#prevent-useeffect-from-running-every-render
+
+* useState
+* router
+* Redux
+* Bind
+* Listeners
+* dependencies
+
+# Dependencies
+
+## React
+
+- react     ::
+- react-dom ::
+- react-router-dom ::
+- redux/flux :: 
+
+## Babel
+
+- @babel/core         ::
+- @babel/preset-env   ::
+- @babel/preset-react ::
+
+## Webpack
+
+- webpack             ::
+- webpack-cli         ::
+- webpack-dev-server  ::
+- html-webpack-plugin ::
+- ts-loader           :: typescript hook to transpile TS->ES6
+- babel-loader        :: babel hook to transpile ES6->ES5
+- css-loader          :: reads css file as string
+- style-loader        :: inserts css into the page
+
+## Typescript:
+
+- typescript       ::
+- @types/node      ::
+- @types/react     ::
+- @types/react-dom ::
+- @types/jest      ::
+
+## Tests
+
+- jest ::
+
+## Aditional
+
+- dotenv :: loads keys from .env file into process.env variable
+
+
+# Setting up Babel and Webpack
+
+# Setting up Typescript 
+
+# Setting up nodemon
+
+# Configuring jest
+
+
+# Why are all dependencies NOT dev dependencies?
+
+The distinction is meaningful for Node apps because they actually are deployed
+as runtime. So you might not want to deploy development dependencies.
+
+In case of React apps, the end result is a static bundle. So in a sense all
+dependencies are "development dependencies", even React or libraries you use.
+They're used only at the build time.
+
+But putting everything into build dependencies can break some deployment
+scripts that do the initial build on the server. So it's easier to put
+everything into regular dependencies instead.
+
+# Aditional libraries
+
+axios
+moment
+express
+@types/express 
+nodemon 
+ts-node  :: allows node to run typescript directly (run time)
+typescript 
+ts-loader :: typescript loader for webpack 
+
+* dependencies 2
+
+react              :: provides the Component class
+react-dom          :: plugs components into the DOM
+babel              :: transpiles most syntaxes to ES5. uses plugins to do it.
+babel-preset-env   :: transpiles most ES6 features to ES5
+babel-preset-react :: transpiles react ES6/JSX features to ES5
+babel-loader       :: babel driver used by webpack
+babel-core         :: cli tool for running babel
+webpack            :: bundles js and css into one file. uses babel
+webpack-dev-server :: server and live reload for react app
+webpack-cli        :: cli tool for running webpack commands
+
+* react with CDNs
+
+    #+begin_example html
+
+        <html>
+        <script src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
+        <script src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
+        <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
+
+        <body>
+            <div id="root"></div>
+            <script type="text/babel">
+                class Hello extends React.Component {
+                    render() {
+                        return <h1>Hello {this.props.name}</h1>
+                    }
+                }
+                ReactDOM.render(<Hello name="World!" />, document.getElementById('root'))
+            </script>
+        </body>
+
+        </html>
+    
+    #+end_example

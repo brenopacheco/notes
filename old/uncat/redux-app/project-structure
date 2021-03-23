@@ -1,0 +1,20 @@
+https://dev.to/resir014/a-type-safe-approach-to-redux-stores-in-typescript--5ajm
+.
+|-- components
+|   |-- Footer.tsx
+|   `-- Header.tsx
+|-- containers
+|   `-- ChatWindow.tsx
+|-- store
+|   |-- chat
+|   |   |-- actions.ts
+|   |   |-- reducer.ts
+|   |   `-- types.ts
+|   ├── layout
+|   |   |-- actions.ts
+|   |   |-- reducer.ts
+|   |   `-- types.ts
+|   `-- index.ts // combine reducers
+|-- ...
+|-- index.tsx
+`-- types.d.ts

@@ -1,0 +1,60 @@
+
+
+array                  functions
+    var                fruit = ["Banana", "Apple", "Pear"];
+
+    Array()          builds array. argument is array size
+    Array.from()     builds new array from iterable obj i.e: "foo" -> ['f','o','o']
+    Array.isArray()  returns true if something is an array
+    Array.of()       builds new array given elements: i,e: 1 -> [1]
+
+    entries()     returns iterator with key-value tuples
+    values()      returns iterator only with values
+    keys()        returns iterator only with indexes
+    concat()      concatenate arrays
+    copyWithin()  swaps subarray position (target[, start[, end]])
+    every()       tests wether all elements pass a test (true/false fun.)
+    some()        returns true if at least 1 elem passes a function test
+    fill()        fills array with value (value[, start[, end]])
+    filter()      return array with elements that pass function test
+    find()        returns first value that pass function test
+    findIndex()   same as find() but returns the index
+    flat()        flattens out nested arrays up to N levels deep i.e: [1,2,[3,4]]
+    flatMap()     same as calling map() followed by flat()
+    forEach()     apply a function to each element
+    includes()    returns true/false wether array contains an element
+    indexOf()     first index of element in array
+    join()        join elements in a single string using separator
+    lastIndexOf() last index of element in array
+    map()         apply fun to each element and return array with results
+    pop()         remove last element
+    push()        add element to the end
+    reduce()      apply fun to each element and return a single result. uses accumulator
+    reduceRight() same as using reverse() and reduce()
+    reverse()     reverse order of elements in array
+    shift()       remove first element
+    slice()       copy array from (start) to [end]
+    sort()        sorts alphabetically
+    splice()      removes or replaces elements args: start[, deleteCount[, item1[, item2[, ...]]]]
+    toString()    Converts elements to strings
+    unshift()     add element to the beginning
+    valueOf()     Returns the primitive value of the specified object
+
+
+Number functions
+
+String functions
+
+Object functions
+
+JSON functions
+
+Error functions
+
+Set functions
+
+Map functions
+
+Symbol functions
+
+

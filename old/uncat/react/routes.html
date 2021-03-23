@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width">
+        <script src="https://unpkg.com/react/umd/react.development.js"></script>
+        <script src="https://unpkg.com/react-dom/umd/react-dom.development.js"></script>
+        <script src="https://unpkg.com/react-router/umd/react-router.min.js"></script>
+        <script src="https://unpkg.com/react-router-dom/umd/react-router-dom.min.js"></script>
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+.active {
+    color: red
+}
+</style>
+    </head>
+    <body>
+        <div id='root'></div>
+        <script type='text/babel'>
+            const Router   = ReactRouterDOM.HashRouter;
+            const Route    = ReactRouterDOM.Route;
+            const Link     = ReactRouterDOM.NavLink;
+            const Prompt   = ReactRouterDOM.Prompt;
+            const Switch   = ReactRouterDOM.Switch;
+            const Redirect = ReactRouterDOM.Redirect;
+
+            const App = props => (
+                <Router>
+                    <ul>
+                        <li><Link to="/">TO HOME</Link></li>
+                        <li><Link to="/a">TO A</Link></li>
+                        <li><Link to="/b">TO B</Link></li>
+                    </ul>
+                    <Route path="/"  component={Home} />
+                    <Route path="/a" component={A}/>
+                    <Route path="/b" component={B} />
+                </Router>
+            )
+
+            const Home = props => <h1>HOME</h1>
+            const A = props => <h1>A</h1>
+            const B = props => <h1>B</h1>
+
+            ReactDOM.render(<App />, document.querySelector('#root'));
+        </script>
+    </body>
+</html>
